@@ -37,8 +37,10 @@ impl Dstv {
                 elements: elements
                     .iter()
                     .skip(1)
+                    // TODO, remove this filter once all implementations are finished
                     .filter(|element| {
                         element.0 == ElementType::Numeration
+                            || element.0 == ElementType::Bends
                             || element.0 == ElementType::Hole
                             || element.0 == ElementType::OuterBorder
                     })
