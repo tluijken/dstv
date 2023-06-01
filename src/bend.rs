@@ -31,7 +31,7 @@ impl DstvElement for Bend {
 
     fn to_svg(&self) -> String {
         format!(
-            "<path d=\"M {} {} A {} {} 0 0 1 {} {}\" stroke=\"black\" fill=\"none\" />",
+            "<path d=\"M{},{} A{},{},0,0,1,{},{}\" stroke=\"black\" fill=\"none\" />",
             self.origin_x, self.origin_y, self.radius, self.radius, self.finish_x, self.finish_y
         )
     }
