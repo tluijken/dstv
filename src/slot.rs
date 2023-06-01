@@ -46,8 +46,4 @@ impl DstvElement for Slot {
             self.diameter / 2.0
         )
     }
-
-    fn is_contour(&self) -> bool {
-        false
-    }
 }

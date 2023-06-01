@@ -4,6 +4,4 @@ pub trait DstvElement {
         Self: Sized;
 
     fn to_svg(&self) -> String;
-
-    fn is_contour(&self) -> bool;
 }

@@ -103,11 +103,7 @@ impl DstvElement for OuterBorder {
         )
     }
 
-    fn is_contour(&self) -> bool {
-        true
-    }
-
     fn from_str(_line: &str) -> Result<Self, &'static str> {
-        unimplemented!();
+        todo!("Find out how to split traits and casts when when calling in a idiomatic way");
     }
 }

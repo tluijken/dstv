@@ -36,10 +36,7 @@ impl DstvElement for Numeration {
     }
 
     fn to_svg(&self) -> String {
+        // todo: implement
         "".to_string()
-    }
-
-    fn is_contour(&self) -> bool {
-        false
     }
 }

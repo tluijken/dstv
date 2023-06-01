@@ -35,8 +35,4 @@ impl DstvElement for Bend {
             self.origin_x, self.origin_y, self.radius, self.radius, self.finish_x, self.finish_y
         )
     }
-
-    fn is_contour(&self) -> bool {
-        false
-    }
 }

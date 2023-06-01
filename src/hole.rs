@@ -37,8 +37,4 @@ impl DstvElement for Hole {
             self.diameter / 2.0
         )
     }
-
-    fn is_contour(&self) -> bool {
-        false
-    }
 }
