@@ -13,7 +13,7 @@ pub enum CodeProfile {
 }
 
 impl CodeProfile {
-    pub fn from_str(s: &str) -> CodeProfile {
+    fn from_str(s: &str) -> CodeProfile {
         match s {
             "I" => CodeProfile::I,
             "L" => CodeProfile::L,

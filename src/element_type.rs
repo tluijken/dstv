@@ -41,12 +41,12 @@ impl ElementType {
 
     fn parse_dstv_element_from_line(&self, line: &str) -> Box<dyn DstvElement> {
         match self {
-            ElementType::Numeration => Box::new(Numeration::from_lines(line).unwrap()),
-            ElementType::Bends => Box::new(Bend::from_lines(line).unwrap()),
+            ElementType::Numeration => Box::new(Numeration::from_str(line).unwrap()),
+            ElementType::Bends => Box::new(Bend::from_str(line).unwrap()),
             ElementType::Hole => match &line.split_whitespace().count() {
-                4 => Box::new(Hole::from_lines(line).unwrap()),
-                5 => Box::new(Hole::from_lines(line).unwrap()),
-                8 => Box::new(Slot::from_lines(line).unwrap()),
+                4 => Box::new(Hole::from_str(line).unwrap()),
+                5 => Box::new(Hole::from_str(line).unwrap()),
+                8 => Box::new(Slot::from_str(line).unwrap()),
                 _ => panic!("Invalid Hole"),
             },
             _ => panic!("Invalid Element Type"),

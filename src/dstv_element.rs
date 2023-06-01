@@ -1,5 +1,5 @@
 pub trait DstvElement {
-    fn from_lines(line: &str) -> Result<Self, &'static str>
+    fn from_str(line: &str) -> Result<Self, &'static str>
     where
         Self: Sized;
 

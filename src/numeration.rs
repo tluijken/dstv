@@ -1,5 +1,5 @@
 pub use crate::prelude::DstvElement;
-use crate::validate_flange;
+use crate::{get_f64_from_str, validate_flange};
 
 pub struct Numeration {
     pub angle: f64,
@@ -11,7 +11,7 @@ pub struct Numeration {
 }
 
 impl DstvElement for Numeration {
-    fn from_lines(line: &str) -> Result<Self, &'static str> {
+    fn from_str(line: &str) -> Result<Self, &'static str> {
         let mut iter = line.split_whitespace();
         let fl_code = iter.next().unwrap();
         let flange = match validate_flange(fl_code) {
@@ -19,16 +19,12 @@ impl DstvElement for Numeration {
             false => "x",
         };
 
-        let x_coord = iter
-            .next()
-            .unwrap()
-            .replace("o", "")
-            .parse::<f64>()
-            .unwrap();
-        let y_coord = iter.next().unwrap().parse::<f64>().unwrap();
-        let angle = iter.next().unwrap().parse::<f64>().unwrap();
-        let letterheight = iter.next().unwrap().parse::<f64>().unwrap();
-        let text = iter.next().unwrap().to_string();
+        let x_coord = get_f64_from_str(iter.next(), "x_coord");
+        let y_coord = get_f64_from_str(iter.next(), "y_coord");
+        let angle = get_f64_from_str(iter.next(), "angle");
+        let letterheight = get_f64_from_str(iter.next(), "letterheight");
+        let text = iter.next().expect("Text element not found").to_string();
+
         Ok(Self {
             angle,
             letterheight,
@@ -40,8 +36,7 @@ impl DstvElement for Numeration {
     }
 
     fn to_svg(&self) -> String {
-        let mut svg = String::new();
-        svg.push_str(&format!(
+        format!(
             "<text x=\"{}\" y=\"{}\" transform=\"rotate({} {} {})\" font-size=\"{}\">{}</text>",
             self.x_coord,
             self.y_coord,
@@ -50,8 +45,7 @@ impl DstvElement for Numeration {
             self.y_coord,
             self.letterheight,
             self.text
-        ));
-        svg
+        )
     }
 
     fn is_contour(&self) -> bool {
