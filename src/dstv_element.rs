@@ -1,3 +1,9 @@
 pub trait DstvElement {
-    fn get_data_vec(&self) -> Vec<f64>;
+    fn from_lines(line: &str) -> Result<Self, &'static str>
+    where
+        Self: Sized;
+
+    fn to_svg(&self) -> String;
+
+    fn is_contour(&self) -> bool;
 }

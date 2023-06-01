@@ -29,17 +29,37 @@ impl Dstv {
             });
 
         let header = Header::from_lines(elements[0].1.clone());
+        for element in &elements {
+            println!("{:?}", element.0);
+        }
         match header {
             Ok(_) => Ok(Self {
                 header: header.unwrap(),
-                elements: vec![],
+                elements: elements
+                    .iter()
+                    .skip(1)
+                    .filter(|element| {
+                        element.0 == ElementType::Numeration || element.0 == ElementType::Hole
+                    })
+                    .map(|element| element.0.parse_dstv_element(&element.1))
+                    .flatten()
+                    .collect(),
             }),
             Err(_) => Err("Invalid Header"),
         }
     }
 
-    pub fn to_svg() -> String {
-        todo!()
+    pub fn to_svg(&self) -> String {
+        format!("<svg viewbox=\"0 0 {} {}\" width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">{}</svg>",
+            self.header.length,
+            self.header.profile_height,
+            self.header.length,
+            self.header.profile_height,
+            self.elements
+                .iter()
+                .map(|element| element.to_svg())
+                .collect::<Vec<String>>()
+                .join(""))
     }
 }
 

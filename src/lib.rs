@@ -1,19 +1,36 @@
+mod bend;
+mod contour;
 mod dstv;
 mod dstv_element;
 mod element_type;
 mod header;
+mod hole;
+mod numeration;
+mod slot;
+
 mod prelude {
+    pub use crate::bend::*;
+    pub use crate::contour::*;
     pub use crate::dstv::*;
     pub use crate::dstv_element::*;
     pub use crate::element_type::*;
     pub use crate::header::*;
+    pub use crate::hole::*;
+    pub use crate::numeration::*;
+    pub use crate::slot::*;
 }
 
-use prelude::*;
+pub fn validate_flange(flange: &str) -> bool {
+    // validate is flange is either u v o or h
+    match flange {
+        "u" | "v" | "o" | "h" => true,
+        _ => false,
+    }
+}
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::prelude::*;
 
     #[test]
     fn read_header() {
@@ -44,5 +61,7 @@ mod tests {
         assert_eq!(dstv.header.text1_info_on_piece, "");
         assert_eq!(dstv.header.text2_info_on_piece, "");
         assert_eq!(dstv.header.text3_info_on_piece, "");
+
+        print!("{}", dstv.to_svg());
     }
 }
