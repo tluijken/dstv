@@ -1,4 +1,7 @@
-use crate::prelude::{Bend, DstvElement, Hole, Numeration, Slot};
+use crate::{
+    outer_border::OuterBorder,
+    prelude::{Bend, DstvElement, Hole, Numeration, Slot},
+};
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub enum ElementType {
@@ -33,10 +36,13 @@ impl ElementType {
     }
 
     pub fn parse_dstv_element(&self, lines: &Vec<&str>) -> Vec<Box<dyn DstvElement>> {
-        lines
-            .iter()
-            .map(|line| self.parse_dstv_element_from_line(line))
-            .collect()
+        match self {
+            ElementType::OuterBorder => vec![Box::new(OuterBorder::from_lines(lines))],
+            _ => lines
+                .iter()
+                .map(|line| self.parse_dstv_element_from_line(line))
+                .collect(),
+        }
     }
 
     fn parse_dstv_element_from_line(&self, line: &str) -> Box<dyn DstvElement> {

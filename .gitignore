@@ -14,4 +14,5 @@ Cargo.lock
 *.pdb
 
 **/.idea
-./tests/example/**
+**/*.svg
+**/P82.*

@@ -36,16 +36,7 @@ impl DstvElement for Numeration {
     }
 
     fn to_svg(&self) -> String {
-        format!(
-            "<text x=\"{}\" y=\"{}\" transform=\"rotate({} {} {})\" font-size=\"{}\">{}</text>",
-            self.x_coord,
-            self.y_coord,
-            self.angle,
-            self.x_coord,
-            self.y_coord,
-            self.letterheight,
-            self.text
-        )
+        "".to_string()
     }
 
     fn is_contour(&self) -> bool {

@@ -1,5 +1,4 @@
 use crate::prelude::{DstvElement, ElementType, Header};
-use std::collections::HashMap;
 
 pub struct Dstv {
     pub header: Header,
@@ -39,7 +38,9 @@ impl Dstv {
                     .iter()
                     .skip(1)
                     .filter(|element| {
-                        element.0 == ElementType::Numeration || element.0 == ElementType::Hole
+                        element.0 == ElementType::Numeration
+                            || element.0 == ElementType::Hole
+                            || element.0 == ElementType::OuterBorder
                     })
                     .map(|element| element.0.parse_dstv_element(&element.1))
                     .flatten()
