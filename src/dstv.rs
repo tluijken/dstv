@@ -7,26 +7,35 @@ pub struct Dstv {
 }
 
 impl Dstv {
-    pub fn from_file(file_path: &str) -> Self {
+    pub fn from_file(file_path: &str) -> Result<Self, &'static str> {
         let lines = std::fs::read_to_string(file_path).expect("Unable to read file");
 
         let elements = lines
             .lines()
-            .filter(|line| !line.is_empty())
             .filter(|line| !line.trim().starts_with('*'))
             // create a tuple of (element_type, lines)
             .fold(Vec::<(ElementType, Vec<&str>)>::new(), |mut acc, line| {
                 // get the element type from the first two characters
-                let element_type = ElementType::from_str(&line[0..2]);
+                let element_type = match &line.is_empty() {
+                    true => ElementType::None,
+                    false => ElementType::from_str(&line[0..2]),
+                };
                 match element_type {
-                    ElementType::None => acc.last_mut().unwrap().1.push(line),
+                    ElementType::None => acc.last_mut().unwrap().1.push(line.trim()),
                     ElementType::EndOfFile => {}
-                    _ => acc.push((element_type, vec![line])),
+                    _ => acc.push((element_type, vec![])),
                 }
                 acc
             });
-        println!("{:?}", elements);
-        todo!()
+
+        let header = Header::from_lines(elements[0].1.clone());
+        match header {
+            Ok(_) => Ok(Self {
+                header: header.unwrap(),
+                elements: vec![],
+            }),
+            Err(_) => Err("Invalid Header"),
+        }
     }
 
     pub fn to_svg() -> String {
