@@ -10,33 +10,8 @@ homepage = "https://github.com/tluijken/dstv"
 description = """
 DSTV is a Rust library for parsing DSTV files and visualizing the parsed data.
 """
-keywords = [
-    "dstv",
-    "tekla",
-    "steel",
-    "construction",
-    "visualization",
-    "geometry",
-    "3d",
-    "2d",
-    "cad",
-    "information",
-    "modeling",
-    "data",
-    "exchange",
-    "format",
-    "parser",
-    "par",
-]
-categories = [
-    "algorithms",
-    "parsing",
-    "visualization",
-    "geometry",
-    "3d",
-    "2d",
-    "cad",
-]
+keywords = ["dstv", "tekla", "steel", "visualization", "parser"]
+categories = ["parsing", "visualization", "geometry", "2d"]
 autobenches = true
 edition = "2021"
 rust-version = "1.56"
