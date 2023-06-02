@@ -43,6 +43,8 @@ impl Dstv {
                             || element.0 == ElementType::Bends
                             || element.0 == ElementType::Hole
                             || element.0 == ElementType::OuterBorder
+                            || element.0 == ElementType::InnerBorder
+                            || element.0 == ElementType::Cuts
                     })
                     .map(|element| element.0.parse_dstv_element(&element.1))
                     .flatten()

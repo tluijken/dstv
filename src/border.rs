@@ -8,7 +8,7 @@ pub struct InnerBorder {
     pub contour: Vec<BorderPoint>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct BorderPoint {
     pub fl_code: String,
     pub x_coord: f64,
@@ -17,84 +17,58 @@ pub struct BorderPoint {
 }
 
 fn read_contour(lines: &[&str]) -> Vec<BorderPoint> {
-    let mut contour = Vec::new();
-    for line in lines {
-        let mut iter = line.split_whitespace();
-        let fl_code = match validate_flange(&iter.clone().next().unwrap_or("")) {
-            true => iter.next().unwrap(),
-            false => "x",
-        };
+    lines
+        .iter()
+        .map(|line| {
+            let mut iter = line.split_whitespace();
+            let fl_code = iter
+                .next()
+                .map(|s| if validate_flange(s) { s } else { "x" })
+                .unwrap_or("x");
 
-        let x_coord = get_f64_from_str(iter.next(), "x_coord");
-        let y_coord = get_f64_from_str(iter.next(), "y_coord");
-        let radius = get_f64_from_str(iter.next(), "radius");
-        println!("{} {} {}", x_coord, y_coord, radius);
-        contour.push(BorderPoint {
-            fl_code: fl_code.to_string(),
-            x_coord,
-            y_coord,
-            radius,
-        });
+            let x_coord = get_f64_from_str(iter.next(), "x_coord");
+            let y_coord = get_f64_from_str(iter.next(), "y_coord");
+            let radius = get_f64_from_str(iter.next(), "radius");
+
+            BorderPoint {
+                fl_code: fl_code.to_string(),
+                x_coord,
+                y_coord,
+                radius,
+            }
+        })
+        .collect()
+}
+
+fn get_bend(point: &BorderPoint, prev: &BorderPoint) -> (f64, f64, f64, f64) {
+    match (prev.y_coord > point.y_coord, point.x_coord > prev.x_coord) {
+        (true, true) => (prev.x_coord, point.y_coord, point.x_coord, point.y_coord), // left-top corner
+        (false, true) => (point.x_coord, prev.y_coord, point.x_coord, point.y_coord), // top-right corner
+        (false, false) => (prev.x_coord, point.y_coord, point.x_coord, point.y_coord), // right-bottom corner
+        (true, false) => (point.x_coord, prev.y_coord, point.x_coord, point.y_coord), // bottom-left corner
     }
-    contour
 }
 
 fn contour_to_svg(contour: &Vec<BorderPoint>, color: &str) -> String {
-    let mut sb = String::new();
-    let mut previous = BorderPoint {
-        fl_code: "x".to_string(),
-        x_coord: 0.0,
-        y_coord: 0.0,
-        radius: 0.0,
-    };
-    for (i, point) in contour.iter().enumerate() {
-        if i == 0 {
-            sb.push_str(&format!(
-                "M{},{} ",
-                point.x_coord - point.radius,
-                point.y_coord
-            ));
-        } else {
-            let radius = previous.radius;
-            match radius > 0.0 {
-                true => {
-                    if previous.y_coord > point.y_coord && point.x_coord > previous.x_coord {
-                        // left-top corner
-                        sb.push_str(&format!(
-                            "Q{},{},{},{} ",
-                            previous.x_coord, point.y_coord, point.x_coord, point.y_coord
-                        ));
-                    } else if previous.y_coord < point.y_coord && point.x_coord > previous.x_coord {
-                        // top-right corner
-                        sb.push_str(&format!(
-                            "Q{},{},{},{} ",
-                            point.x_coord, previous.y_coord, point.x_coord, point.y_coord
-                        ));
-                    } else if previous.y_coord < point.y_coord && point.x_coord < previous.x_coord {
-                        // right-bottom corner
-                        sb.push_str(&format!(
-                            "Q{},{},{},{} ",
-                            previous.x_coord, point.y_coord, point.x_coord, point.y_coord
-                        ));
-                    } else if previous.y_coord > point.y_coord && point.x_coord < previous.x_coord {
-                        // bottom-left corner
-                        sb.push_str(&format!(
-                            "Q{},{},{},{} ",
-                            point.x_coord, previous.y_coord, point.x_coord, point.y_coord
-                        ));
-                    }
-                }
-                false => {
-                    sb.push_str(&format!("L{},{} ", point.x_coord, point.y_coord));
-                }
-            }
-        }
-        previous = point.clone();
-    }
+    let (path_str, _) = contour.iter().enumerate().fold(
+        (String::new(), BorderPoint::default()),
+        |(mut path, prev), (i, point)| {
+            let segment = if i == 0 {
+                format!("M{},{} ", point.x_coord - point.radius, point.y_coord)
+            } else if prev.radius > 0.0 {
+                let (x1, y1, x2, y2) = get_bend(point, &prev);
+                format!("Q{},{},{},{} ", x1, y1, x2, y2)
+            } else {
+                format!("L{},{} ", point.x_coord, point.y_coord)
+            };
+            path.push_str(&segment);
+            (path, point.clone())
+        },
+    );
 
     format!(
         "<path d=\"{}\" fill=\"{}\" stroke=\"black\" stroke-width=\"0.5\" />",
-        sb, color
+        path_str, color
     )
 }
 

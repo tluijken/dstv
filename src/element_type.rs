@@ -1,4 +1,4 @@
-use crate::prelude::{Bend, DstvElement, Hole, InnerBorder, Numeration, OuterBorder, Slot};
+use crate::prelude::{Bend, Cut, DstvElement, Hole, InnerBorder, Numeration, OuterBorder, Slot};
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub enum ElementType {
@@ -48,6 +48,7 @@ impl ElementType {
         match self {
             ElementType::Numeration => Box::new(Numeration::from_str(line).unwrap()),
             ElementType::Bends => Box::new(Bend::from_str(line).unwrap()),
+            ElementType::Cuts => Box::new(Cut::from_str(line).unwrap()),
             ElementType::Hole => match &line.split_whitespace().count() < &8 {
                 true => Box::new(Hole::from_str(line).unwrap()),
                 false => Box::new(Slot::from_str(line).unwrap()),

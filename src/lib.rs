@@ -1,6 +1,6 @@
 mod bend;
 mod border;
-mod contour;
+mod cut;
 mod dstv;
 mod dstv_element;
 mod element_type;
@@ -12,7 +12,7 @@ mod slot;
 pub mod prelude {
     pub use crate::bend::*;
     pub use crate::border::*;
-    pub use crate::contour::*;
+    pub use crate::cut::*;
     pub use crate::dstv::*;
     pub use crate::dstv_element::*;
     pub use crate::element_type::*;
@@ -31,7 +31,6 @@ pub fn validate_flange(flange: &str) -> bool {
 }
 
 pub fn get_f64_from_str(line: Option<&str>, name: &str) -> f64 {
-    println!("{}: {:?}", name, line);
     match line {
         Some(x) => x
             .replace("s", "")
