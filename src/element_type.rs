@@ -1,7 +1,4 @@
-use crate::{
-    outer_border::OuterBorder,
-    prelude::{Bend, DstvElement, Hole, Numeration, Slot},
-};
+use crate::prelude::{Bend, DstvElement, Hole, InnerBorder, Numeration, OuterBorder, Slot};
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub enum ElementType {
@@ -38,8 +35,10 @@ impl ElementType {
     pub fn parse_dstv_element(&self, lines: &Vec<&str>) -> Vec<Box<dyn DstvElement>> {
         match self {
             ElementType::OuterBorder => vec![Box::new(OuterBorder::from_lines(lines))],
+            ElementType::InnerBorder => vec![Box::new(InnerBorder::from_lines(lines))],
             _ => lines
                 .iter()
+                .filter(|line| !line.is_empty())
                 .map(|line| self.parse_dstv_element_from_line(line))
                 .collect(),
         }
@@ -49,11 +48,9 @@ impl ElementType {
         match self {
             ElementType::Numeration => Box::new(Numeration::from_str(line).unwrap()),
             ElementType::Bends => Box::new(Bend::from_str(line).unwrap()),
-            ElementType::Hole => match &line.split_whitespace().count() {
-                4 => Box::new(Hole::from_str(line).unwrap()),
-                5 => Box::new(Hole::from_str(line).unwrap()),
-                8 => Box::new(Slot::from_str(line).unwrap()),
-                _ => panic!("Invalid Hole"),
+            ElementType::Hole => match &line.split_whitespace().count() < &8 {
+                true => Box::new(Hole::from_str(line).unwrap()),
+                false => Box::new(Slot::from_str(line).unwrap()),
             },
             _ => panic!("Invalid Element Type"),
         }
