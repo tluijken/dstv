@@ -1,16 +1,29 @@
 use crate::get_f64_from_str;
 use crate::prelude::DstvElement;
 
+/// Represents a cut in the DSTV file
 pub struct Cut {
+    /// Normal vector x component
     pub nor_vec_x: f64,
+    /// Normal vector y component
     pub nor_vec_y: f64,
+    /// Normal vector z component
     pub nor_vec_z: f64,
+    /// Start point x coordinate
     pub sp_point_x: f64,
+    /// Start point y coordinate
     pub sp_point_y: f64,
+    /// Start point z coordinate
     pub sp_point_z: f64,
 }
 
 impl DstvElement for Cut {
+    /// Create a new cut from a string slice.
+    /// The string slice is expected to be a line from a DSTV file.
+    /// # Arguments
+    /// * `line` - A string slice containing a line from a DSTV file.
+    /// # Returns
+    /// A Result containing either a Cut or a &'static str.
     fn from_str(line: &str) -> Result<Self, &'static str> {
         let mut iter = line.split_whitespace();
         if iter.clone().count() < 6 {
@@ -32,6 +45,9 @@ impl DstvElement for Cut {
         })
     }
 
+    /// Convert the cut to an SVG path.
+    /// # Returns
+    /// A string containing an SVG path.
     fn to_svg(&self) -> String {
         format!(
             "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"black\" />",

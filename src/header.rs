@@ -1,4 +1,5 @@
 #[derive(Debug, PartialEq, Eq, Hash)]
+/// All available profiles in a DSTV file
 pub enum CodeProfile {
     I,
     L,
@@ -13,6 +14,13 @@ pub enum CodeProfile {
 }
 
 impl CodeProfile {
+    /// Creates a new CodeProfile from a string slice
+    /// # Arguments
+    /// * `s` - A string slice that holds the CodeProfile
+    /// # Returns
+    /// * A CodeProfile
+    /// # Panics
+    /// * If the string slice does not match any CodeProfile
     fn from_str(s: &str) -> CodeProfile {
         match s {
             "I" => CodeProfile::I,
@@ -29,6 +37,11 @@ impl CodeProfile {
         }
     }
 
+    /// Converts a CodeProfile to a string slice
+    /// # Arguments
+    /// * `self` - A CodeProfile
+    /// # Returns
+    /// * A string slice for a more human readable CodeProfile
     pub fn to_str(&self) -> &str {
         match self {
             CodeProfile::I => "Profile I",
@@ -45,41 +58,74 @@ impl CodeProfile {
     }
 }
 
+/// The header of a DSTV file
 #[derive(Debug)]
 pub struct Header {
+    /// The order identification of the order the pieces belong to
     pub order_identification: String,
+    /// The drawing identification of the drawing the pieces belong to
     pub drawing_identification: String,
+    /// The phase identification of the phase the pieces belong to
     pub phase_identification: String,
+    /// The piece identification of the piece
     pub piece_identification: String,
+    /// The steel quality of the piece
     pub steel_quality: String,
+    /// The number of pieces for the order, and phase
     pub quantity_of_pieces: i32,
+    /// The profile of the piece
     pub profile: String,
+    /// The profile type of the piece
     pub code_profile: CodeProfile,
+    /// The length of the piece
     pub length: f64,
+    /// The saw length of the piece
     pub saw_length: Option<f64>,
+    /// The profile height of the piece
     pub profile_height: f64,
+    /// The flange width of the piece
     pub flange_width: f64,
+    /// The flange thickness of the piece
     pub flange_thickness: f64,
+    /// The web thickness of the piece
     pub web_thickness: f64,
+    /// The radius of the piece
     pub radius: f64,
+    /// The weight by meter of the piece
     pub weight_by_meter: f64,
+    /// The painting surface by meter of the piece
     pub painting_surface_by_meter: f64,
+    /// The web start cut of the piece
     pub web_start_cut: f64,
+    /// The web end cut of the piece
     pub web_end_cut: f64,
+    /// The flange start cut of the piece
     pub flange_start_cut: f64,
+    /// The flange end cut of the piece
     pub flange_end_cut: f64,
+    /// The text1 info on piece of the piece
     pub text1_info_on_piece: String,
+    /// The text2 info on piece of the piece
     pub text2_info_on_piece: String,
+    /// The text3 info on piece of the piece
     pub text3_info_on_piece: String,
+    /// The text4 info on piece of the piece
     pub text4_info_on_piece: String,
 }
 
 impl Header {
+    /// Creates a new Header from a vector of string slices
+    /// # Arguments
+    /// * `lines` - A vector of string slices that holds the header
+    /// # Returns
+    /// A `Result` containing either a `Header` or an error message
     pub fn from_lines(lines: Vec<&str>) -> Result<Self, &'static str> {
         if lines.len() < 24 {
             return Err("Invalid Header");
         }
         let lengths = lines[8].trim().split(',').collect::<Vec<&str>>();
+        // the length and the saw length of the piece are stored on the same line,
+        // separated by a comma
         let (length, saw_length) = if lengths.len() == 2 {
             (
                 lengths[0].trim().parse::<f64>().unwrap(),

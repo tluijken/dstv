@@ -1,11 +1,20 @@
 use crate::prelude::{DstvElement, ElementType, Header};
 
+/// Represents a DSTV file
+/// Includes a header and a vector of DSTV elements
 pub struct Dstv {
+    /// The header of the DSTV file containing information about the project, phase, etc.
     pub header: Header,
+    /// A vector of DSTV elements, e.g. cuts, holes, borders, etc.
     pub elements: Vec<Box<dyn DstvElement>>,
 }
 
 impl Dstv {
+    /// Creates a new Dstv struct from a file path
+    /// # Arguments
+    /// * `file_path` - A string slice that holds the path to the file
+    /// # Returns
+    /// * A Result containing either a Dstv struct or a &'static str
     pub fn from_file(file_path: &str) -> Result<Self, &'static str> {
         let lines = std::fs::read_to_string(file_path).expect("Unable to read file");
 
@@ -54,6 +63,9 @@ impl Dstv {
         }
     }
 
+    /// Converts the Dstv struct to a string of SVG
+    /// # Returns
+    /// * A string slice containing the SVG
     pub fn to_svg(&self) -> String {
         format!("<svg viewbox=\"0 0 {} {}\" width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">{}</svg>",
             self.header.length,

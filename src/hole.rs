@@ -1,15 +1,26 @@
 pub use crate::prelude::DstvElement;
 use crate::{get_f64_from_str, validate_flange};
 
+/// Represents a hole in a plate
 pub struct Hole {
+    /// Diameter of the hole
     pub diameter: f64,
+    /// Depth of the hole
     pub depth: f64,
+    /// X coordinate of the hole
     pub x_coord: f64,
+    /// Y coordinate of the hole
     pub y_coord: f64,
+    /// Flange code of the hole
     pub fl_code: String,
 }
 
 impl DstvElement for Hole {
+    /// Parses a hole from a line of text
+    /// # Arguments
+    /// * `line` - A line of text from a DSTV file
+    /// # Returns
+    /// A `Result` containing either a `Hole` or an error message
     fn from_str(line: &str) -> Result<Self, &'static str> {
         let mut iter = line.split_whitespace();
         let fl_code = iter.next().unwrap();
@@ -29,6 +40,9 @@ impl DstvElement for Hole {
         })
     }
 
+    /// Converts a hole to an SVG circle
+    /// # Returns
+    /// An SVG circle element
     fn to_svg(&self) -> String {
         format!(
             "<circle cx=\"{}\" cy=\"{}\" r=\"{}\" fill=\"white\" />",

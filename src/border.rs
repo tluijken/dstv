@@ -1,21 +1,45 @@
 use crate::{dstv_element::DstvElement, get_f64_from_str, validate_flange};
 
+/// A struct representing the outer border of a DSTV file
+/// A DSTV file can have multiple outer borders
 pub struct OuterBorder {
+    /// A vector of border points, representing the contour of the outer border
     pub contour: Vec<BorderPoint>,
 }
 
+/// A struct representing the inner border of a DSTV file
+/// A DSTV file can have multiple inner borders
 pub struct InnerBorder {
+    /// A vector of border points, representing the contour of the inner border
     pub contour: Vec<BorderPoint>,
 }
 
+/// A struct representing a border point
+/// A border point is a point on the contour of a border
+/// It has an x and y coordinate and a radius
 #[derive(Clone, Debug, Default)]
 pub struct BorderPoint {
+    /// The flange code of the border point
     pub fl_code: String,
+    /// The x coordinate of the border point
     pub x_coord: f64,
+    /// The y coordinate of the border point
     pub y_coord: f64,
+    /// The radius of the border point
     pub radius: f64,
 }
 
+/// Reads the contour of a border from a DSTV file.
+/// The contour is represented by a vector of BorderPoints
+/// # Arguments
+/// * `lines` - A vector of strings, representing the lines of the DSTV file
+/// # Returns
+/// A vector of BorderPoints, representing the contour of the border
+/// # Panics
+/// Panics if the flange code of a border point is invalid
+/// Panics if the x coordinate of a border point is invalid
+/// Panics if the y coordinate of a border point is invalid
+/// Panics if the radius of a border point is invalid
 fn read_contour(lines: &[&str]) -> Vec<BorderPoint> {
     lines
         .iter()
@@ -40,6 +64,12 @@ fn read_contour(lines: &[&str]) -> Vec<BorderPoint> {
         .collect()
 }
 
+/// calculates the bend between two border points if the previous border point has a radius.
+/// # Arguments
+/// * `point` - The current border point
+/// * `prev` - The previous border point
+/// # Returns
+/// A tuple of four f64 values representing the bend
 fn get_bend(point: &BorderPoint, prev: &BorderPoint) -> (f64, f64, f64, f64) {
     match (prev.y_coord > point.y_coord, point.x_coord > prev.x_coord) {
         (true, true) => (prev.x_coord, point.y_coord, point.x_coord, point.y_coord), // left-top corner
@@ -49,6 +79,12 @@ fn get_bend(point: &BorderPoint, prev: &BorderPoint) -> (f64, f64, f64, f64) {
     }
 }
 
+/// Converts a contour to an SVG path
+/// # Arguments
+/// * `contour` - A vector of BorderPoints, representing the contour of a border
+/// * `color` - A string representing the color of the border
+/// # Returns
+/// A string representing the SVG path of the border
 fn contour_to_svg(contour: &Vec<BorderPoint>, color: &str) -> String {
     let (path_str, _) = contour.iter().enumerate().fold(
         (String::new(), BorderPoint::default()),
@@ -73,6 +109,9 @@ fn contour_to_svg(contour: &Vec<BorderPoint>, color: &str) -> String {
 }
 
 impl OuterBorder {
+    /// Creates a new OuterBorder from a vector of BorderPoints
+    /// # Arguments
+    /// * `lines` - A vector of string slices, representing the contour of the border
     pub fn from_lines(lines: &[&str]) -> Self {
         Self {
             contour: read_contour(lines),
@@ -81,6 +120,9 @@ impl OuterBorder {
 }
 
 impl InnerBorder {
+    /// Creates a new InnerBorder from a vector of BorderPoints
+    /// # Arguments
+    /// * `lines` - A vector of string slices, representing the contour of the border
     pub fn from_lines(lines: &[&str]) -> Self {
         Self {
             contour: read_contour(lines),
@@ -88,6 +130,9 @@ impl InnerBorder {
     }
 }
 impl DstvElement for OuterBorder {
+    /// Converts the outer border to an SVG path
+    /// # Returns
+    /// A string representing the SVG path of the outer border
     fn to_svg(&self) -> String {
         contour_to_svg(&self.contour, "grey")
     }
@@ -98,6 +143,9 @@ impl DstvElement for OuterBorder {
 }
 
 impl DstvElement for InnerBorder {
+    /// Converts the inner border to an SVG path
+    /// # Returns
+    /// A string representing the SVG path of the inner border
     fn to_svg(&self) -> String {
         contour_to_svg(&self.contour, "white")
     }
