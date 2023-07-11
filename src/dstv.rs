@@ -37,9 +37,7 @@ impl Dstv {
             });
 
         let header = Header::from_lines(elements[0].1.clone());
-        for element in &elements {
-            println!("{:?}", element.0);
-        }
+
         match header {
             Ok(_) => Ok(Self {
                 header: header.unwrap(),
@@ -66,17 +64,16 @@ impl Dstv {
     /// Converts the Dstv struct to a string of SVG
     /// # Returns
     /// * A string slice containing the SVG
-    pub fn to_svg(&self) -> String {
+    pub fn to_svg(&mut self) -> String {
+        self.elements.sort_by_key(|element| element.get_index());
         format!("<svg viewbox=\"0 0 {} {}\" width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">{}</svg>",
             self.header.length,
             self.header.profile_height,
             self.header.length,
             self.header.profile_height,
-            self.elements
-                .iter()
+            self.elements                .iter()
                 .map(|element| element.to_svg())
                 .collect::<Vec<String>>()
                 .join(""))
     }
 }
-

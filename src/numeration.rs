@@ -53,4 +53,8 @@ impl DstvElement for Numeration {
         // todo: implement
         "".to_string()
     }
+
+    fn get_index(&self) -> usize {
+        2
+    }
 }

@@ -57,4 +57,8 @@ impl DstvElement for Cut {
             self.sp_point_y + self.nor_vec_y
         )
     }
+
+    fn get_index(&self) -> usize {
+        2
+    }
 }

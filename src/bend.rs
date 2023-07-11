@@ -47,6 +47,10 @@ impl DstvElement for Bend {
         })
     }
 
+    fn get_index(&self) -> usize {
+        2
+    }
+
     /// Convert the bend to an SVG path.
     /// # Returns
     /// A string containing an SVG path.

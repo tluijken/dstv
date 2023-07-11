@@ -51,4 +51,8 @@ impl DstvElement for Hole {
             self.diameter / 2.0
         )
     }
+
+    fn get_index(&self) -> usize {
+        2
+    }
 }

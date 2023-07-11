@@ -1,3 +1,5 @@
+use std::borrow::{Borrow, BorrowMut};
+
 use crate::{dstv_element::DstvElement, get_f64_from_str, validate_flange};
 
 /// A struct representing the outer border of a DSTV file
@@ -27,6 +29,8 @@ pub struct BorderPoint {
     pub y_coord: f64,
     /// The radius of the border point
     pub radius: f64,
+
+    pub bevel: f64,
 }
 
 /// Reads the contour of a border from a DSTV file.
@@ -44,21 +48,27 @@ fn read_contour(lines: &[&str]) -> Vec<BorderPoint> {
     lines
         .iter()
         .map(|line| {
-            let mut iter = line.split_whitespace();
-            let fl_code = iter
-                .next()
-                .map(|s| if validate_flange(s) { s } else { "x" })
-                .unwrap_or("x");
+            let mut iter = line.split_whitespace().peekable();
+            let first = iter.peek();
+            let fl_code = match validate_flange(first.unwrap_or(&"x")) {
+                true => iter.next().unwrap(),
+                false => "x",
+            };
 
             let x_coord = get_f64_from_str(iter.next(), "x_coord");
             let y_coord = get_f64_from_str(iter.next(), "y_coord");
             let radius = get_f64_from_str(iter.next(), "radius");
+            let bevel = match iter.peek().is_some() {
+                true => get_f64_from_str(iter.next(), "bevel"),
+                false => 0.0,
+            };
 
             BorderPoint {
                 fl_code: fl_code.to_string(),
                 x_coord,
                 y_coord,
                 radius,
+                bevel,
             }
         })
         .collect()
@@ -86,6 +96,7 @@ fn get_bend(point: &BorderPoint, prev: &BorderPoint) -> (f64, f64, f64, f64) {
 /// # Returns
 /// A string representing the SVG path of the border
 fn contour_to_svg(contour: &Vec<BorderPoint>, color: &str) -> String {
+    let mut bevel_lines = Vec::new();
     let (path_str, _) = contour.iter().enumerate().fold(
         (String::new(), BorderPoint::default()),
         |(mut path, prev), (i, point)| {
@@ -97,14 +108,23 @@ fn contour_to_svg(contour: &Vec<BorderPoint>, color: &str) -> String {
             } else {
                 format!("L{},{} ", point.x_coord, point.y_coord)
             };
+            if prev.bevel > 0.0 {
+                let bevel_line = format!(
+                    "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"red\" stroke-width=\"4\" />",
+                    prev.x_coord, prev.y_coord, point.x_coord, point.y_coord
+                );
+                bevel_lines.push(bevel_line);
+            }
             path.push_str(&segment);
             (path, point.clone())
         },
     );
 
     format!(
-        "<path d=\"{}\" fill=\"{}\" stroke=\"black\" stroke-width=\"0.5\" />",
-        path_str, color
+        "<path d=\"{}\" fill=\"{}\" stroke=\"black\" stroke-width=\"0.5\" />{}",
+        path_str,
+        color,
+        bevel_lines.join("")
     )
 }
 
@@ -140,6 +160,10 @@ impl DstvElement for OuterBorder {
     fn from_str(_line: &str) -> Result<Self, &'static str> {
         todo!("Find out how to split traits and casts when when calling in a idiomatic way");
     }
+
+    fn get_index(&self) -> usize {
+        0
+    }
 }
 
 impl DstvElement for InnerBorder {
@@ -152,5 +176,9 @@ impl DstvElement for InnerBorder {
 
     fn from_str(_line: &str) -> Result<Self, &'static str> {
         todo!("Find out how to split traits and casts when when calling in a idiomatic way");
+    }
+
+    fn get_index(&self) -> usize {
+        1
     }
 }
