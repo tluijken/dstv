@@ -1,5 +1,3 @@
-use std::borrow::{Borrow, BorrowMut};
-
 use crate::{dstv_element::DstvElement, get_f64_from_str, validate_flange};
 
 /// A struct representing the outer border of a DSTV file
