@@ -29,7 +29,9 @@ Here's a basic example of how to use DSTV to parse a DSTV file and generate an S
 use dstv::prelude::*;
 let dstv = Dstv::from_file("./tests/data/0008-SE0009.nc1");
 assert_eq!(dstv.is_ok(), true);
-let dstv = dstv.unwrap();
+// Declare the dstv as mutable, as `to_svg` will reorder the elements for the
+// best representation
+let mut dstv = dstv.unwrap();
 assert_eq!(dstv.header.order_identification, "PROJECT-1");
 let svg = dstv.to_svg();
 ```
