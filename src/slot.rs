@@ -36,11 +36,11 @@ impl DstvElement for Slot {
         }
         let x_coord = get_f64_from_str(iter.next(), "x_coord");
         let y_coord = get_f64_from_str(iter.next(), "y_coord");
-        let angle = get_f64_from_str(iter.next(), "angle");
-        let slot_length = get_f64_from_str(iter.next(), "slot_length");
-        let slot_width = get_f64_from_str(iter.next(), "slot_width");
         let diameter = get_f64_from_str(iter.next(), "diameter");
         let depth = get_f64_from_str(iter.next(), "depth");
+        let slot_length = get_f64_from_str(iter.next(), "slot_length");
+        let slot_width = get_f64_from_str(iter.next(), "slot_width");
+        let angle = get_f64_from_str(iter.next(), "angle");
         Ok(Self {
             angle,
             slot_length,
@@ -57,12 +57,13 @@ impl DstvElement for Slot {
     /// # Returns
     /// An SVG circle element
     fn to_svg(&self) -> String {
-        // TODO! this should not be a circle
         format!(
-            "<circle cx=\"{}\" cy=\"{}\" r=\"{}\" fill=\"white\" />",
+            "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"white\" rx=\"{}\" />",
             self.x_coord,
             self.y_coord,
-            self.diameter / 2.0
+            self.slot_length + self.diameter,
+            self.diameter,
+            self.diameter / 2.0,
         )
     }
 

@@ -80,9 +80,9 @@ impl ElementType {
             ElementType::Numeration => Box::new(Numeration::from_str(line).unwrap()),
             ElementType::Bends => Box::new(Bend::from_str(line).unwrap()),
             ElementType::Cuts => Box::new(Cut::from_str(line).unwrap()),
-            ElementType::Hole => match &line.split_whitespace().count() < &8 {
-                true => Box::new(Hole::from_str(line).unwrap()),
-                false => Box::new(Slot::from_str(line).unwrap()),
+            ElementType::Hole => match &line.split_whitespace().count() > &7 {
+                false => Box::new(Hole::from_str(line).unwrap()),
+                true => Box::new(Slot::from_str(line).unwrap()),
             },
             _ => panic!("Invalid Element Type"),
         }

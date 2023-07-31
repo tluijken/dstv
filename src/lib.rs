@@ -64,10 +64,12 @@ pub fn get_f64_from_str(line: Option<&str>, name: &str) -> f64 {
     match line {
         Some(x) => x
             .replace("s", "")
+            .replace("w", "")
+            .replace("l", "")
             .replace("u", "")
             .replace("o", "")
             .parse::<f64>()
-            .expect(&format!("{} not a f64", name)),
+            .expect(&format!("{} not a f64: got {}", name, x)),
         None => {
             println!("{} not found", name);
             0.0

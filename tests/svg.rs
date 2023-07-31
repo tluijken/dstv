@@ -3,6 +3,20 @@ mod tests {
     use std::fs;
 
     use dstv::prelude::*;
+
+    #[test]
+    fn read_svg_p465() {
+        let mut dstv = Dstv::from_file("./tests/data/P465.nc").unwrap();
+        let svg = dstv.to_svg();
+        assert_eq!(
+            svg,
+            fs::read_to_string("./tests/output_svg/P465.svg")
+                .unwrap()
+                // trim the last newline
+                .replace("\n", "")
+        );
+    }
+
     #[test]
     fn read_svg_rst37_2() {
         let mut dstv = Dstv::from_file("./tests/data/RST37-2.nc").unwrap();
