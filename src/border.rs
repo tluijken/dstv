@@ -72,21 +72,6 @@ fn read_contour(lines: &[&str]) -> Vec<BorderPoint> {
         .collect()
 }
 
-/// calculates the bend between two border points if the previous border point has a radius.
-/// # Arguments
-/// * `point` - The current border point
-/// * `prev` - The previous border point
-/// # Returns
-/// A tuple of four f64 values representing the bend
-fn get_bend(point: &BorderPoint, prev: &BorderPoint) -> (f64, f64, f64, f64) {
-    match (prev.y_coord > point.y_coord, point.x_coord > prev.x_coord) {
-        (true, true) => (prev.x_coord, point.y_coord, point.x_coord, point.y_coord), // left-top corner
-        (false, true) => (point.x_coord, prev.y_coord, point.x_coord, point.y_coord), // top-right corner
-        (false, false) => (prev.x_coord, point.y_coord, point.x_coord, point.y_coord), // right-bottom corner
-        (true, false) => (point.x_coord, prev.y_coord, point.x_coord, point.y_coord), // bottom-left corner
-    }
-}
-
 /// Converts a contour to an SVG path
 /// # Arguments
 /// * `contour` - A vector of BorderPoints, representing the contour of a border
@@ -99,12 +84,11 @@ fn contour_to_svg(contour: &Vec<BorderPoint>, color: &str) -> String {
         (String::new(), BorderPoint::default()),
         |(mut path, prev), (i, point)| {
             let segment = if i == 0 {
-                format!("M{},{} ", point.x_coord - point.radius, point.y_coord)
-            } else if prev.radius > 0.0 {
-                let (x1, y1, x2, y2) = get_bend(point, &prev);
-                format!("Q{},{},{},{} ", x1, y1, x2, y2)
+                format!("M {} {} ", point.x_coord, point.y_coord)
+            } else if prev.radius != 0.0 {
+                format!("A {} {} 0 1 1 {} {} ", prev.radius, prev.radius, point.x_coord, point.y_coord)
             } else {
-                format!("L{},{} ", point.x_coord, point.y_coord)
+                format!("L {} {} ", point.x_coord, point.y_coord)
             };
             if prev.bevel > 0.0 {
                 let bevel_line = format!(
@@ -120,7 +104,7 @@ fn contour_to_svg(contour: &Vec<BorderPoint>, color: &str) -> String {
 
     format!(
         "<path d=\"{}\" fill=\"{}\" stroke=\"black\" stroke-width=\"0.5\" />{}",
-        path_str,
+        path_str.trim(),
         color,
         bevel_lines.join("")
     )
