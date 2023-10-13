@@ -84,12 +84,25 @@ fn contour_to_svg(contour: &Vec<BorderPoint>, color: &str) -> String {
         (String::new(), BorderPoint::default()),
         |(mut path, prev), (i, point)| {
             let segment = if i == 0 {
-                format!("M {} {} ", point.x_coord, point.y_coord)
-            } else if prev.radius != 0.0 {
-                format!("A {} {} 0 1 1 {} {} ", prev.radius, prev.radius, point.x_coord, point.y_coord)
-            } else {
-                format!("L {} {} ", point.x_coord, point.y_coord)
-            };
+                format!("M {} {}", point.x_coord, point.y_coord)
+            } 
+            else {
+                match prev.radius {
+                    r if r > 0.0 && prev.y_coord < point.y_coord && point.x_coord > prev.x_coord => {
+                        format!(" Q {} {} {} {}", point.x_coord, prev.y_coord, point.x_coord, point.y_coord)
+                    },
+                    r if r > 0.0 && prev.y_coord < point.y_coord && point.x_coord < prev.x_coord => {
+                        format!(" Q {} {} {} {}", prev.x_coord, point.y_coord, point.x_coord, point.y_coord)
+                    },
+                    r if r > 0.0 && prev.y_coord > point.y_coord && point.x_coord < prev.x_coord => {
+                        format!(" Q {} {} {} {}", point.x_coord, prev.y_coord, point.x_coord, point.y_coord)
+                    },
+                    r if r > 0.0 || r < 0.0 => {
+                        format!(" A {} {} 0 0 0 {} {}", -prev.radius, -prev.radius, point.x_coord, point.y_coord)
+                    },
+                    _ => {
+                    format!(" L {} {}", point.x_coord, point.y_coord)                   }
+                }};
             if prev.bevel > 0.0 {
                 let bevel_line = format!(
                     "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"red\" stroke-width=\"4\" />",
