@@ -1,5 +1,6 @@
 pub use crate::prelude::DstvElement;
-use crate::{get_f64_from_str, validate_flange};
+use crate::{get_f64_from_str, prelude::PartFace};
+use std::str::FromStr;
 
 /// Represents a numeration element
 /// A numeration element is a text element that is used to label a part
@@ -15,7 +16,7 @@ pub struct Numeration {
     /// Y coordinate of the text
     pub y_coord: f64,
     /// Flange code of the text
-    pub fl_code: String,
+    pub fl_code: PartFace,
 }
 
 impl DstvElement for Numeration {
@@ -26,12 +27,7 @@ impl DstvElement for Numeration {
     /// A `Result` containing either a `Numeration` or an error message
     fn from_str(line: &str) -> Result<Self, &'static str> {
         let mut iter = line.split_whitespace();
-        let fl_code = iter.next().unwrap();
-        let flange = match validate_flange(fl_code) {
-            true => fl_code,
-            false => "x",
-        };
-
+        let fl_code = PartFace::from_str(iter.next().unwrap()).expect("Invalid flange code");
         let x_coord = get_f64_from_str(iter.next(), "x_coord");
         let y_coord = get_f64_from_str(iter.next(), "y_coord");
         let angle = get_f64_from_str(iter.next(), "angle");
@@ -44,7 +40,7 @@ impl DstvElement for Numeration {
             text,
             x_coord,
             y_coord,
-            fl_code: flange.to_string(),
+            fl_code,
         })
     }
 

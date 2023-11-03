@@ -7,7 +7,10 @@ mod element_type;
 mod header;
 mod hole;
 mod numeration;
+mod part_face;
 mod slot;
+
+use std::str::FromStr;
 
 /// Re-export all the modules
 pub mod prelude {
@@ -20,6 +23,7 @@ pub mod prelude {
     pub use crate::header::*;
     pub use crate::hole::*;
     pub use crate::numeration::*;
+    pub use crate::part_face::*;
     pub use crate::slot::*;
 }
 
@@ -39,9 +43,9 @@ pub mod prelude {
 /// assert_eq!(validate_flange("x"), false);
 /// ```
 pub fn validate_flange(flange: &str) -> bool {
-    match flange {
-        "u" | "v" | "o" | "h" => true,
-        _ => false,
+    match part_face::PartFace::from_str(flange) {
+        Ok(_) => true,
+        Err(_) => false,
     }
 }
 

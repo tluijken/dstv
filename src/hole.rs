@@ -1,6 +1,6 @@
 pub use crate::prelude::DstvElement;
-use crate::{get_f64_from_str, validate_flange};
-
+use crate::{get_f64_from_str, prelude::PartFace};
+use std::str::FromStr;
 /// Represents a hole in a plate
 pub struct Hole {
     /// Diameter of the hole
@@ -12,7 +12,7 @@ pub struct Hole {
     /// Y coordinate of the hole
     pub y_coord: f64,
     /// Flange code of the hole
-    pub fl_code: String,
+    pub fl_code: PartFace,
 }
 
 impl DstvElement for Hole {
@@ -23,10 +23,7 @@ impl DstvElement for Hole {
     /// A `Result` containing either a `Hole` or an error message
     fn from_str(line: &str) -> Result<Self, &'static str> {
         let mut iter = line.split_whitespace();
-        let fl_code = iter.next().unwrap();
-        if !validate_flange(fl_code) {
-            return Err("Invalid flange code");
-        }
+        let fl_code = PartFace::from_str(iter.next().unwrap()).expect("Invalid flange code");
         let x_coord = get_f64_from_str(iter.next(), "x_coord");
         let y_coord = get_f64_from_str(iter.next(), "y_coord");
         let diameter = get_f64_from_str(iter.next(), "diameter");
@@ -36,7 +33,7 @@ impl DstvElement for Hole {
             depth,
             x_coord,
             y_coord,
-            fl_code: fl_code.to_string(),
+            fl_code,
         })
     }
 

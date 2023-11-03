@@ -1,4 +1,5 @@
-use crate::{dstv_element::DstvElement, get_f64_from_str, validate_flange};
+use crate::{dstv_element::DstvElement, get_f64_from_str, prelude::PartFace};
+use std::str::FromStr;
 
 /// A struct representing the outer border of a DSTV file
 /// A DSTV file can have multiple outer borders
@@ -20,14 +21,14 @@ pub struct InnerBorder {
 #[derive(Clone, Debug, Default)]
 pub struct BorderPoint {
     /// The flange code of the border point
-    pub fl_code: String,
+    pub fl_code: PartFace,
     /// The x coordinate of the border point
     pub x_coord: f64,
     /// The y coordinate of the border point
     pub y_coord: f64,
     /// The radius of the border point
     pub radius: f64,
-
+    /// The bevel of the border point between this and the next point.
     pub bevel: f64,
 }
 
@@ -48,9 +49,14 @@ fn read_contour(lines: &[&str]) -> Vec<BorderPoint> {
         .map(|line| {
             let mut iter = line.split_whitespace().peekable();
             let first = iter.peek();
-            let fl_code = match validate_flange(first.unwrap_or(&"x")) {
-                true => iter.next().unwrap(),
-                false => "x",
+            let fl_code = match PartFace::from_str(first.unwrap_or(&"").trim()) {
+                Ok(fl_code) => {
+                    iter.next(); // iterate to the next split
+                    fl_code
+                }
+                Err(_) => {
+                    PartFace::Front
+                }
             };
 
             let x_coord = get_f64_from_str(iter.next(), "x_coord");
@@ -62,7 +68,7 @@ fn read_contour(lines: &[&str]) -> Vec<BorderPoint> {
             };
 
             BorderPoint {
-                fl_code: fl_code.to_string(),
+                fl_code,
                 x_coord,
                 y_coord,
                 radius,

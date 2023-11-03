@@ -1,16 +1,16 @@
 #[derive(Debug, PartialEq, Eq, Hash)]
 /// All available profiles in a DSTV file
 pub enum CodeProfile {
-    I,
-    L,
-    U,
-    B,
-    RU,
-    RO,
-    M,
-    C,
-    T,
-    SO,
+    I,  // I Profiles
+    L,  // L Profiles
+    U,  // U and C Profiles
+    B,  // Plate profiles
+    RU, // Round tubes
+    RO, // Round bars
+    M,  // Rectangular tubes
+    C,  // C Profiles
+    T,  // T Profiles
+    SO, // Z Profiles and all the other types of profile
 }
 
 impl CodeProfile {
