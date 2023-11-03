@@ -36,6 +36,15 @@ assert_eq!(dstv.header.order_identification, "PROJECT-1");
 let svg = dstv.to_svg();
 ```
 
+### Examples
+
+#### Single faced plates:
+![image](./.images/P2663.svg)
+
+#### Multi facing definitions such as rectangular tubes and U profiles
+![image](./.images/SE0008.svg)
+![image](./.images/SE0009.svg)
+
 ## Contribution
 
 Contributions to the DSTV are welcome. If you find a bug or have a feature request, please open an issue. If you want to contribute code, please open a pull request.
