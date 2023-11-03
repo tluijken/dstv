@@ -1,6 +1,6 @@
 use crate::{
     dstv_element::ParseDstvError,
-    prelude::{DstvElement, ElementType, Header},
+    prelude::{DstvElement, ElementType, Header, PartFace},
 };
 
 /// Represents a DSTV file
@@ -69,14 +69,89 @@ impl Dstv {
     /// * A string slice containing the SVG
     pub fn to_svg(&mut self) -> String {
         self.elements.sort_by_key(|element| element.get_index());
+
+        // the length if the viewbox is twice the size of the number of sides > 2
+        let mut svg = String::from("");
+
+        let mut offset = 0.0;
+
+        // Start with the bottom elements
+        let bottom_elements = self
+            .elements
+            .iter()
+            .filter(|element| element.get_facing() == &PartFace::Bottom)
+            .map(|element| element.to_svg())
+            .collect::<Vec<String>>()
+            .join("");
+
+        if !bottom_elements.is_empty() {
+            svg.push_str(&format!(
+                "<g transform=\"translate(0,{})\" id=\"bottom\">{}</g>",
+                0, bottom_elements
+            ));
+            // Append the flange width to the offset, which sets the entry point for the front
+            // elements
+            offset += self.header.flange_width;
+        }
+
+        // Then the front elements
+        let front_elements = self
+            .elements
+            .iter()
+            .filter(|element| element.get_facing() == &PartFace::Front)
+            .map(|element| element.to_svg())
+            .collect::<Vec<String>>()
+            .join("");
+        if !front_elements.is_empty() {
+            svg.push_str(&format!(
+                "<g transform=\"translate(0,{})\" id=\"front\">{}</g>",
+                offset, front_elements
+            ));
+            // Append the profile height to the offset, which sets the entry point for the top
+            // elements
+            offset += self.header.profile_height;
+        }
+
+        let top_elements = self
+            .elements
+            .iter()
+            .filter(|element| element.get_facing() == &PartFace::Top)
+            .map(|element| element.to_svg())
+            .collect::<Vec<String>>()
+            .join("");
+        if !top_elements.is_empty() {
+            // Since we're flipping this part, append the flange width to the offset, to align the
+            // item well.
+            offset += self.header.flange_width;
+            svg.push_str(&format!(
+                "<g transform=\"translate(0,{}) scale(1, -1)\" id=\"top\">{}</g>",
+                offset, top_elements
+            ));
+        }
+
+        // Render the back elements last
+        let back_elements = self
+            .elements
+            .iter()
+            .filter(|element| element.get_facing() == &PartFace::Behind)
+            .map(|element| element.to_svg())
+            .collect::<Vec<String>>()
+            .join("");
+
+        if !back_elements.is_empty() {
+            svg.push_str(&format!(
+                "<g transform=\"translate(0,{})\" id=\"back\">{}</g>",
+                offset, back_elements
+            ));
+            // Append the profile height to the offset, so we know how height the SVG should be
+            offset += self.header.profile_height;
+        }
+
         format!("<svg viewbox=\"0 0 {} {}\" width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">{}</svg>",
             self.header.length,
-            self.header.profile_height,
+            offset,
             self.header.length,
-            self.header.profile_height,
-            self.elements.iter()
-                .map(|element| element.to_svg())
-                .collect::<Vec<String>>()
-                .join(""))
+            offset,
+            svg)
     }
 }

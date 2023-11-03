@@ -46,6 +46,7 @@ pub struct BorderPoint {
 fn read_contour(lines: &[&str]) -> Vec<BorderPoint> {
     lines
         .iter()
+        .filter(|line| !line.is_empty())
         .map(|line| {
             let mut iter = line.split_whitespace().peekable();
             let first = iter.peek();
@@ -84,7 +85,7 @@ fn read_contour(lines: &[&str]) -> Vec<BorderPoint> {
 /// * `color` - A string representing the color of the border
 /// # Returns
 /// A string representing the SVG path of the border
-fn contour_to_svg(contour: &Vec<BorderPoint>, color: &str) -> String {
+fn contour_to_svg(contour: &Vec<BorderPoint>, color: &str, stroke_width: f64) -> String {
     let mut bevel_lines = Vec::new();
     let (path_str, _) = contour.iter().enumerate().fold(
         (String::new(), BorderPoint::default()),
@@ -122,9 +123,10 @@ fn contour_to_svg(contour: &Vec<BorderPoint>, color: &str) -> String {
     );
 
     format!(
-        "<path d=\"{}\" fill=\"{}\" stroke=\"black\" stroke-width=\"0.5\" />{}",
+        "<path d=\"{}\" fill=\"{}\" stroke=\"black\" stroke-width=\"{}\" />{}",
         path_str.trim(),
         color,
+        stroke_width,
         bevel_lines.join("")
     )
 }
@@ -155,7 +157,7 @@ impl DstvElement for OuterBorder {
     /// # Returns
     /// A string representing the SVG path of the outer border
     fn to_svg(&self) -> String {
-        contour_to_svg(&self.contour, "grey")
+        contour_to_svg(&self.contour, "grey", 0.5)
     }
 
     fn from_str(_line: &str) -> Result<Self, ParseDstvError> {
@@ -176,7 +178,7 @@ impl DstvElement for InnerBorder {
     /// # Returns
     /// A string representing the SVG path of the inner border
     fn to_svg(&self) -> String {
-        contour_to_svg(&self.contour, "white")
+        contour_to_svg(&self.contour, "white", 0.5)
     }
 
     fn from_str(_line: &str) -> Result<Self, ParseDstvError> {
