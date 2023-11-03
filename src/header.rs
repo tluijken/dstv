@@ -1,3 +1,5 @@
+use crate::dstv_element::ParseDstvError;
+
 #[derive(Debug, PartialEq, Eq, Hash)]
 /// All available profiles in a DSTV file
 pub enum CodeProfile {
@@ -119,9 +121,9 @@ impl Header {
     /// * `lines` - A vector of string slices that holds the header
     /// # Returns
     /// A `Result` containing either a `Header` or an error message
-    pub fn from_lines(lines: Vec<&str>) -> Result<Self, &'static str> {
+    pub fn from_lines(lines: Vec<&str>) -> Result<Self, ParseDstvError> {
         if lines.len() < 24 {
-            return Err("Invalid Header");
+            return Err(ParseDstvError::new("Invalid Header"));
         }
         let lengths = lines[8].trim().split(',').collect::<Vec<&str>>();
         // the length and the saw length of the piece are stored on the same line,

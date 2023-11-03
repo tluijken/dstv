@@ -1,4 +1,4 @@
-use crate::{dstv_element::DstvElement, get_f64_from_str, prelude::PartFace};
+use crate::{dstv_element::{DstvElement, ParseDstvError}, get_f64_from_str, prelude::PartFace};
 use std::str::FromStr;
 
 /// A struct representing the outer border of a DSTV file
@@ -158,12 +158,16 @@ impl DstvElement for OuterBorder {
         contour_to_svg(&self.contour, "grey")
     }
 
-    fn from_str(_line: &str) -> Result<Self, &'static str> {
+    fn from_str(_line: &str) -> Result<Self, ParseDstvError> {
         todo!("Find out how to split traits and casts when when calling in a idiomatic way");
     }
 
     fn get_index(&self) -> usize {
         0
+    }
+
+    fn get_facing(&self) -> &PartFace {
+        &self.contour[0].fl_code
     }
 }
 
@@ -175,11 +179,15 @@ impl DstvElement for InnerBorder {
         contour_to_svg(&self.contour, "white")
     }
 
-    fn from_str(_line: &str) -> Result<Self, &'static str> {
+    fn from_str(_line: &str) -> Result<Self, ParseDstvError> {
         todo!("Find out how to split traits and casts when when calling in a idiomatic way");
     }
 
     fn get_index(&self) -> usize {
         1
+    }
+
+    fn get_facing(&self) -> &PartFace {
+        &self.contour[0].fl_code
     }
 }

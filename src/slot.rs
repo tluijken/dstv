@@ -1,3 +1,4 @@
+use crate::dstv_element::ParseDstvError;
 use crate::get_f64_from_str;
 use crate::prelude::{DstvElement, PartFace};
 use std::str::FromStr;
@@ -29,7 +30,7 @@ impl DstvElement for Slot {
     /// * `line` - A line of text from a DSTV file
     /// # Returns
     /// A `Result` containing either a `Slot` or an error message
-    fn from_str(line: &str) -> Result<Self, &'static str> {
+    fn from_str(line: &str) -> Result<Self, ParseDstvError> {
         let mut iter = line.split_whitespace();
         let fl_code = PartFace::from_str(iter.next().unwrap()).expect("Invalid flange code");
         let x_coord = get_f64_from_str(iter.next(), "x_coord");
@@ -67,5 +68,9 @@ impl DstvElement for Slot {
 
     fn get_index(&self) -> usize {
         2
+    }
+
+    fn get_facing(&self) -> &PartFace {
+        &self.fl_code
     }
 }

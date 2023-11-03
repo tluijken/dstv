@@ -1,3 +1,4 @@
+use crate::dstv_element::ParseDstvError;
 use crate::get_f64_from_str;
 use crate::prelude::DstvElement;
 
@@ -24,10 +25,12 @@ impl DstvElement for Cut {
     /// * `line` - A string slice containing a line from a DSTV file.
     /// # Returns
     /// A Result containing either a Cut or a &'static str.
-    fn from_str(line: &str) -> Result<Self, &'static str> {
+    fn from_str(line: &str) -> Result<Self, ParseDstvError> {
         let mut iter = line.split_whitespace();
         if iter.clone().count() < 6 {
-            return Err("Illegal data vector format (SC): too short");
+            return Err(ParseDstvError::new(
+                "Illegal data vector format (SC): too short",
+            ));
         }
         let sp_point_x = get_f64_from_str(iter.next(), "sp_point_x");
         let sp_point_y = get_f64_from_str(iter.next(), "sp_point_y");
@@ -60,5 +63,9 @@ impl DstvElement for Cut {
 
     fn get_index(&self) -> usize {
         2
+    }
+
+    fn get_facing(&self) -> &crate::prelude::PartFace {
+        &crate::prelude::PartFace::Top
     }
 }

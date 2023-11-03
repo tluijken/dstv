@@ -1,4 +1,7 @@
-use crate::prelude::{DstvElement, ElementType, Header};
+use crate::{
+    dstv_element::ParseDstvError,
+    prelude::{DstvElement, ElementType, Header},
+};
 
 /// Represents a DSTV file
 /// Includes a header and a vector of DSTV elements
@@ -15,7 +18,7 @@ impl Dstv {
     /// * `file_path` - A string slice that holds the path to the file
     /// # Returns
     /// * A Result containing either a Dstv struct or a &'static str
-    pub fn from_file(file_path: &str) -> Result<Self, &'static str> {
+    pub fn from_file(file_path: &str) -> Result<Self, ParseDstvError> {
         let lines = std::fs::read_to_string(file_path).expect("Unable to read file");
 
         let elements = lines
@@ -57,7 +60,7 @@ impl Dstv {
                     .flatten()
                     .collect(),
             }),
-            Err(_) => Err("Invalid Header"),
+            Err(_) => Err(ParseDstvError::new("Invalid Header")),
         }
     }
 
@@ -71,7 +74,7 @@ impl Dstv {
             self.header.profile_height,
             self.header.length,
             self.header.profile_height,
-            self.elements                .iter()
+            self.elements.iter()
                 .map(|element| element.to_svg())
                 .collect::<Vec<String>>()
                 .join(""))
