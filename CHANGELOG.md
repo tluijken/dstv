@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 You may also find the [Upgrade Guide](https://rust-random.github.io/book/update.html) useful.
 
+## [0.5.0] - Release Nov 9th 2023
+### Added
+* Added support for visualizing multiple faces of a DSTV file (front, back, top
+  and bottom).
+### Fixed
+* There was a bug where empty lines where added to the countors, resulting in
+  odd lines from the last point of the contour to 0.0. These lines no longer
+  show.
+
 ## [0.4.0] - Released Oct 13th 2023
 ### Added
 * More unit tests to secure contour representations
