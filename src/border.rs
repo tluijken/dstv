@@ -38,12 +38,12 @@ pub struct BorderPoint {
 /// * `lines` - A vector of strings, representing the lines of the DSTV file
 /// # Returns
 /// A vector of BorderPoints, representing the contour of the border
-/// # Panics
-/// Panics if the flange code of a border point is invalid
-/// Panics if the x coordinate of a border point is invalid
-/// Panics if the y coordinate of a border point is invalid
-/// Panics if the radius of a border point is invalid
-fn read_contour(lines: &[&str]) -> Vec<BorderPoint> {
+/// # Errors
+/// * If the flange code of a border point is invalid
+/// * If the x coordinate of a border point is invalid
+/// * If the y coordinate of a border point is invalid
+/// * If the radius of a border point is invalid
+fn read_contour(lines: &[&str]) -> Result<Vec<BorderPoint>,ParseDstvError> {
     lines
         .iter()
         .filter(|line| !line.is_empty())
@@ -60,21 +60,20 @@ fn read_contour(lines: &[&str]) -> Vec<BorderPoint> {
                 }
             };
 
-            let x_coord = get_f64_from_str(iter.next(), "x_coord");
-            let y_coord = get_f64_from_str(iter.next(), "y_coord");
-            let radius = get_f64_from_str(iter.next(), "radius");
-            let bevel = match iter.peek().is_some() {
-                true => get_f64_from_str(iter.next(), "bevel"),
-                false => 0.0,
+            let x_coord = get_f64_from_str(iter.next(), "x_coord")?;
+            let y_coord = get_f64_from_str(iter.next(), "y_coord")?;
+            let radius = get_f64_from_str(iter.next(), "radius")?;
+            let bevel = match iter.next() {
+                Some(val) =>     get_f64_from_str(Some(val), "bevel")?,
+                _ => 0.0
             };
-
-            BorderPoint {
+            Ok(BorderPoint {
                 fl_code,
                 x_coord,
                 y_coord,
                 radius,
                 bevel,
-            }
+            })
         })
         .collect()
 }
@@ -85,7 +84,7 @@ fn read_contour(lines: &[&str]) -> Vec<BorderPoint> {
 /// * `color` - A string representing the color of the border
 /// # Returns
 /// A string representing the SVG path of the border
-fn contour_to_svg(contour: &Vec<BorderPoint>, color: &str, stroke_width: f64) -> String {
+fn contour_to_svg(contour: &[BorderPoint], color: &str, stroke_width: f64) -> String {
     let mut bevel_lines = Vec::new();
     let (path_str, _) = contour.iter().enumerate().fold(
         (String::new(), BorderPoint::default()),
@@ -135,10 +134,10 @@ impl OuterBorder {
     /// Creates a new OuterBorder from a vector of BorderPoints
     /// # Arguments
     /// * `lines` - A vector of string slices, representing the contour of the border
-    pub fn from_lines(lines: &[&str]) -> Self {
-        Self {
-            contour: read_contour(lines),
-        }
+    pub fn from_lines(lines: &[&str]) -> Result<Self,ParseDstvError> {
+        Ok(Self {
+            contour: read_contour(lines)?,
+        })
     }
 }
 
@@ -146,10 +145,10 @@ impl InnerBorder {
     /// Creates a new InnerBorder from a vector of BorderPoints
     /// # Arguments
     /// * `lines` - A vector of string slices, representing the contour of the border
-    pub fn from_lines(lines: &[&str]) -> Self {
-        Self {
-            contour: read_contour(lines),
-        }
+    pub fn from_lines(lines: &[&str]) -> Result<Self,ParseDstvError> {
+        Ok(Self {
+            contour: read_contour(lines)?,
+        })
     }
 }
 impl DstvElement for OuterBorder {

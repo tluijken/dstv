@@ -43,36 +43,35 @@ impl Dstv {
                     false => ElementType::from_str(&line[0..2]),
                 };
                 match element_type {
-                    ElementType::None => acc.last_mut().unwrap().1.push(line.trim()),
-                    ElementType::EndOfFile => {}
+                    ElementType::None if !acc.is_empty() => {
+                        acc.last_mut().unwrap().1.push(line.trim())
+                    }
+                    ElementType::None => (),
+                    ElementType::EndOfFile => (),
                     _ => acc.push((element_type, vec![])),
                 }
                 acc
             });
 
-        let header = Header::from_lines(elements[0].1.clone());
-
-        match header {
-            Ok(_) => Ok(Self {
-                header: header.unwrap(),
-                elements: elements
-                    .iter()
-                    .skip(1)
-                    // TODO, remove this filter once all implementations are finished
-                    .filter(|element| {
-                        element.0 == ElementType::Numeration
-                            || element.0 == ElementType::Bends
-                            || element.0 == ElementType::Hole
-                            || element.0 == ElementType::OuterBorder
-                            || element.0 == ElementType::InnerBorder
-                            || element.0 == ElementType::Cuts
-                    })
-                    .map(|element| element.0.parse_dstv_element(&element.1))
-                    .flatten()
-                    .collect(),
-            }),
-            Err(_) => Err(ParseDstvError::new("Invalid Header")),
-        }
+        let header = Header::from_lines(elements[0].1.clone())
+            .map_err(|e| ParseDstvError::from_err("Invalid Header", e))?;
+        let elements: Result<Vec<_>, ParseDstvError> = elements
+            .iter()
+            .skip(1)
+            // TODO, remove this filter once all implementations are finished
+            .filter(|element| {
+                element.0 == ElementType::Numeration
+                    || element.0 == ElementType::Bends
+                    || element.0 == ElementType::Hole
+                    || element.0 == ElementType::OuterBorder
+                    || element.0 == ElementType::InnerBorder
+                    || element.0 == ElementType::Cuts
+            })
+            .map(|element| element.0.parse_dstv_element(&element.1))
+            // .flatten()
+            .collect();
+        let elements = elements?.into_iter().flatten().collect();
+        Ok(Self { header, elements })
     }
 
     /// Converts the Dstv struct to a string of SVG

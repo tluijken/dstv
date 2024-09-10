@@ -32,12 +32,12 @@ impl DstvElement for Bend {
     /// A Result containing either a Bend or a &'static str.
     fn from_str(line: &str) -> Result<Self, ParseDstvError> {
         let mut iter = line.split_whitespace();
-        let origin_x = get_f64_from_str(iter.next(), "origin_x");
-        let origin_y = get_f64_from_str(iter.next(), "origin_y");
-        let angle = get_f64_from_str(iter.next(), "angle");
-        let radius = get_f64_from_str(iter.next(), "radius");
-        let finish_x = get_f64_from_str(iter.next(), "finish_x");
-        let finish_y = get_f64_from_str(iter.next(), "finish_y");
+        let origin_x = get_f64_from_str(iter.next(), "origin_x")?;
+        let origin_y = get_f64_from_str(iter.next(), "origin_y")?;
+        let angle = get_f64_from_str(iter.next(), "angle")?;
+        let radius = get_f64_from_str(iter.next(), "radius")?;
+        let finish_x = get_f64_from_str(iter.next(), "finish_x")?;
+        let finish_y = get_f64_from_str(iter.next(), "finish_y")?;
         Ok(Self {
             angle,
             radius,

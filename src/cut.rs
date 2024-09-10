@@ -32,12 +32,12 @@ impl DstvElement for Cut {
                 "Illegal data vector format (SC): too short",
             ));
         }
-        let sp_point_x = get_f64_from_str(iter.next(), "sp_point_x");
-        let sp_point_y = get_f64_from_str(iter.next(), "sp_point_y");
-        let sp_point_z = get_f64_from_str(iter.next(), "sp_point_z");
-        let nor_vec_x = get_f64_from_str(iter.next(), "nor_vec_x");
-        let nor_vec_y = get_f64_from_str(iter.next(), "nor_vec_y");
-        let nor_vec_z = get_f64_from_str(iter.next(), "nor_vec_z");
+        let sp_point_x = get_f64_from_str(iter.next(), "sp_point_x")?;
+        let sp_point_y = get_f64_from_str(iter.next(), "sp_point_y")?;
+        let sp_point_z = get_f64_from_str(iter.next(), "sp_point_z")?;
+        let nor_vec_x = get_f64_from_str(iter.next(), "nor_vec_x")?;
+        let nor_vec_y = get_f64_from_str(iter.next(), "nor_vec_y")?;
+        let nor_vec_z = get_f64_from_str(iter.next(), "nor_vec_z")?;
         Ok(Self {
             nor_vec_x,
             nor_vec_y,

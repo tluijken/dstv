@@ -4,7 +4,6 @@ mod tests {
     #[test]
     fn read_header_p1() {
         let dstv = Dstv::from_file("./tests/data/P1.nc");
-        assert_eq!(dstv.is_ok(), true);
         let dstv = dstv.unwrap();
         assert_eq!(dstv.header.order_identification, "PROJECT-1");
         assert_eq!(dstv.header.drawing_identification, "0");
@@ -35,7 +34,6 @@ mod tests {
     #[test]
     fn read_header_rst37_2() {
         let dstv = Dstv::from_file("./tests/data/RST37-2.nc");
-        assert_eq!(dstv.is_ok(), true);
         let dstv = dstv.unwrap();
         assert_eq!(dstv.header.order_identification, "1");
         assert_eq!(dstv.header.drawing_identification, "1");
@@ -67,7 +65,6 @@ mod tests {
     #[test]
     fn read_header_pl01() {
         let dstv = Dstv::from_file("./tests/data/0008-PL0001.NC1");
-        assert_eq!(dstv.is_ok(), true);
         let dstv = dstv.unwrap();
         assert_eq!(dstv.header.order_identification, "0008");
         assert_eq!(dstv.header.drawing_identification, "NA");
@@ -98,7 +95,6 @@ mod tests {
     #[test]
     fn read_header_se04() {
         let dstv = Dstv::from_file("./tests/data/0008-SE0004.nc1");
-        assert_eq!(dstv.is_ok(), true);
         let dstv = dstv.unwrap();
         assert_eq!(dstv.header.order_identification, "0008");
         assert_eq!(dstv.header.drawing_identification, "NA");
@@ -129,7 +125,6 @@ mod tests {
     #[test]
     fn read_header_se08() {
         let dstv = Dstv::from_file("./tests/data/0008-SE0008.nc1");
-        assert_eq!(dstv.is_ok(), true);
         let dstv = dstv.unwrap();
         assert_eq!(dstv.header.order_identification, "0008");
         assert_eq!(dstv.header.drawing_identification, "NA");
@@ -160,7 +155,6 @@ mod tests {
     #[test]
     fn read_header_se09() {
         let dstv = Dstv::from_file("./tests/data/0008-SE0009.nc1");
-        assert_eq!(dstv.is_ok(), true);
         let dstv = dstv.unwrap();
         assert_eq!(dstv.header.order_identification, "0008");
         assert_eq!(dstv.header.drawing_identification, "NA");

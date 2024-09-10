@@ -1,14 +1,21 @@
+use std::fmt::Debug;
+
 use crate::prelude::PartFace;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct ParseDstvError {
     message: String,
 }
 
 impl ParseDstvError {
-    pub fn new(message: &str) -> ParseDstvError {
+    pub fn from_err<S: AsRef<str>, E: Debug>(message: S, error: E) -> Self {
+        Self {
+            message: format!("`{}`:\t`{:#?}`", message.as_ref(), error),
+        }
+    }
+    pub fn new<S: AsRef<str>>(message: S) -> ParseDstvError {
         ParseDstvError {
-            message: message.to_string(),
+            message: message.as_ref().to_string(),
         }
     }
 }

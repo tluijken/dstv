@@ -12,6 +12,8 @@ mod slot;
 
 use std::str::FromStr;
 
+use prelude::ParseDstvError;
+
 /// Re-export all the modules
 pub mod prelude {
     pub use crate::bend::*;
@@ -43,10 +45,7 @@ pub mod prelude {
 /// assert_eq!(validate_flange("x"), false);
 /// ```
 pub fn validate_flange(flange: &str) -> bool {
-    match part_face::PartFace::from_str(flange) {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    part_face::PartFace::from_str(flange).is_ok()
 }
 
 /// Get f64 from string and strips it of any non numeric characters
@@ -58,13 +57,13 @@ pub fn validate_flange(flange: &str) -> bool {
 /// # example
 /// ```
 /// use dstv::get_f64_from_str;
-/// assert_eq!(get_f64_from_str(Some("1.0s"), "test"), 1.0);
-/// assert_eq!(get_f64_from_str(Some("1.0u"), "test"), 1.0);
-/// assert_eq!(get_f64_from_str(Some("1.0o"), "test"), 1.0);
-/// assert_eq!(get_f64_from_str(Some("1.0"), "test"), 1.0);
-/// assert_eq!(get_f64_from_str(None, "test"), 0.0);
+/// assert_eq!(get_f64_from_str(Some("1.0s"), "test"), Ok(1.0));
+/// assert_eq!(get_f64_from_str(Some("1.0u"), "test"), Ok(1.0));
+/// assert_eq!(get_f64_from_str(Some("1.0o"), "test"), Ok(1.0));
+/// assert_eq!(get_f64_from_str(Some("1.0"), "test"), Ok(1.0));
+/// assert_eq!(get_f64_from_str(None, "test"), Ok(0.0));
 /// ```
-pub fn get_f64_from_str(line: Option<&str>, name: &str) -> f64 {
+pub fn get_f64_from_str(line: Option<&str>, name: &str) -> Result<f64, ParseDstvError> {
     match line {
         Some(x) => x
             .replace("s", "")
@@ -73,10 +72,10 @@ pub fn get_f64_from_str(line: Option<&str>, name: &str) -> f64 {
             .replace("u", "")
             .replace("o", "")
             .parse::<f64>()
-            .expect(&format!("{} not a f64: got {}", name, x)),
+            .map_err(|_| ParseDstvError::new(format!("`{name}` not a f64: got `{x}`"))),
         None => {
             println!("{} not found", name);
-            0.0
+            Ok(0.0)
         }
     }
 }

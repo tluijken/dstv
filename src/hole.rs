@@ -23,11 +23,11 @@ impl DstvElement for Hole {
     /// A `Result` containing either a `Hole` or an error message
     fn from_str(line: &str) -> Result<Self, ParseDstvError> {
         let mut iter = line.split_whitespace();
-        let fl_code = PartFace::from_str(iter.next().unwrap()).expect("Invalid flange code");
-        let x_coord = get_f64_from_str(iter.next(), "x_coord");
-        let y_coord = get_f64_from_str(iter.next(), "y_coord");
-        let diameter = get_f64_from_str(iter.next(), "diameter");
-        let depth = get_f64_from_str(iter.next(), "depth");
+        let fl_code = PartFace::from_str(iter.next().ok_or(ParseDstvError::new("No Hole Found"))?)?;
+        let x_coord = get_f64_from_str(iter.next(), "x_coord")?;
+        let y_coord = get_f64_from_str(iter.next(), "y_coord")?;
+        let diameter = get_f64_from_str(iter.next(), "diameter")?;
+        let depth = get_f64_from_str(iter.next(), "depth")?;
         Ok(Self {
             diameter,
             depth,
