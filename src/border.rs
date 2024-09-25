@@ -170,6 +170,9 @@ impl DstvElement for OuterBorder {
     fn get_facing(&self) -> &PartFace {
         &self.contour[0].fl_code
     }
+    fn as_any(&self) -> &dyn core::any::Any {
+        self
+    }
 }
 
 impl DstvElement for InnerBorder {
@@ -190,5 +193,8 @@ impl DstvElement for InnerBorder {
 
     fn get_facing(&self) -> &PartFace {
         &self.contour[0].fl_code
+    }
+    fn as_any(&self) -> &dyn core::any::Any {
+        self
     }
 }

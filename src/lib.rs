@@ -73,9 +73,6 @@ pub fn get_f64_from_str(line: Option<&str>, name: &str) -> Result<f64, ParseDstv
             .replace("o", "")
             .parse::<f64>()
             .map_err(|_| ParseDstvError::new(format!("`{name}` not a f64: got `{x}`"))),
-        None => {
-            println!("{} not found", name);
-            Ok(0.0)
-        }
+        None => Ok(0.0),
     }
 }

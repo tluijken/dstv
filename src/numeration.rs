@@ -60,4 +60,7 @@ impl DstvElement for Numeration {
     fn get_facing(&self) -> &PartFace {
         &self.fl_code
     }
+    fn as_any(&self) -> &dyn core::any::Any {
+        self
+    }
 }

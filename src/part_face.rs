@@ -3,9 +3,13 @@ use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum PartFace {
+    /// The Front or `v` Face
     Front,
+    /// The Top or `o` Face
     Top,
+    /// The Bottom or `u` Face
     Bottom,
+    /// The Behind or `h` Face
     Behind,
 }
 

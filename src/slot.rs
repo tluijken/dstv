@@ -73,4 +73,7 @@ impl DstvElement for Slot {
     fn get_facing(&self) -> &PartFace {
         &self.fl_code
     }
+    fn as_any(&self) -> &dyn core::any::Any {
+        self
+    }
 }

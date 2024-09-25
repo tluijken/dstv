@@ -68,4 +68,7 @@ impl DstvElement for Cut {
     fn get_facing(&self) -> &crate::prelude::PartFace {
         &crate::prelude::PartFace::Top
     }
+    fn as_any(&self) -> &dyn core::any::Any {
+        self
+    }
 }

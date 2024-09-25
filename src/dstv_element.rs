@@ -53,4 +53,5 @@ pub trait DstvElement {
     /// Returns the flange code of the element.
     /// This is used to determine the side of the element that is drawn.
     fn get_facing(&self) -> &PartFace;
+    fn as_any(&self) -> &dyn core::any::Any;
 }

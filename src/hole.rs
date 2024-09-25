@@ -27,7 +27,7 @@ impl DstvElement for Hole {
         let x_coord = get_f64_from_str(iter.next(), "x_coord")?;
         let y_coord = get_f64_from_str(iter.next(), "y_coord")?;
         let diameter = get_f64_from_str(iter.next(), "diameter")?;
-        let depth = get_f64_from_str(iter.next(), "depth")?;
+        let depth = get_f64_from_str(iter.next(), "depth").unwrap_or_default();
         Ok(Self {
             diameter,
             depth,
@@ -55,5 +55,8 @@ impl DstvElement for Hole {
 
     fn get_facing(&self) -> &PartFace {
         &self.fl_code
+    }
+    fn as_any(&self) -> &dyn core::any::Any {
+        self
     }
 }
