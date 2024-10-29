@@ -3,7 +3,6 @@ mod border;
 mod cut;
 mod dstv;
 mod dstv_element;
-mod element_type;
 mod header;
 mod hole;
 mod numeration;
@@ -21,7 +20,6 @@ pub mod prelude {
     pub use crate::cut::*;
     pub use crate::dstv::*;
     pub use crate::dstv_element::*;
-    pub use crate::element_type::*;
     pub use crate::header::*;
     pub use crate::hole::*;
     pub use crate::numeration::*;
