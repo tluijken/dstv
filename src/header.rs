@@ -1,3 +1,5 @@
+use std::{fmt::Debug, str::FromStr};
+
 use crate::dstv_element::ParseDstvError;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -16,29 +18,6 @@ pub enum CodeProfile {
 }
 
 impl CodeProfile {
-    /// Creates a new CodeProfile from a string slice
-    /// # Arguments
-    /// * `s` - A string slice that holds the CodeProfile
-    /// # Returns
-    /// * A CodeProfile
-    /// # Panics
-    /// * If the string slice does not match any CodeProfile
-    fn from_str(s: &str) -> CodeProfile {
-        match s {
-            "I" => CodeProfile::I,
-            "L" => CodeProfile::L,
-            "U" => CodeProfile::U,
-            "B" => CodeProfile::B,
-            "RU" => CodeProfile::RU,
-            "RO" => CodeProfile::RO,
-            "M" => CodeProfile::M,
-            "C" => CodeProfile::C,
-            "T" => CodeProfile::T,
-            "SO" => CodeProfile::SO,
-            _ => panic!("Invalid CodeProfile"),
-        }
-    }
-
     /// Converts a CodeProfile to a string slice
     /// # Arguments
     /// * `self` - A CodeProfile
@@ -57,6 +36,33 @@ impl CodeProfile {
             CodeProfile::T => "Profile T",
             CodeProfile::SO => "Special Profile",
         }
+    }
+}
+
+impl FromStr for CodeProfile {
+    type Err = ParseDstvError;
+    /// Creates a new CodeProfile from a string slice
+    /// # Arguments
+    /// * `s` - A string slice that holds the CodeProfile
+    /// # Returns
+    /// * A CodeProfile
+    /// # Error
+    /// * If the string slice does not match any CodeProfile
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.trim();
+        Ok(match s {
+            "I" => CodeProfile::I,
+            "L" => CodeProfile::L,
+            "U" => CodeProfile::U,
+            "B" => CodeProfile::B,
+            "RU" => CodeProfile::RU,
+            "RO" => CodeProfile::RO,
+            "M" => CodeProfile::M,
+            "C" => CodeProfile::C,
+            "T" => CodeProfile::T,
+            "SO" => CodeProfile::SO,
+            _ => return Err(ParseDstvError::new(format!("Invalid CodeProfile: {s}"))),
+        })
     }
 }
 
@@ -125,43 +131,57 @@ impl Header {
         if lines.len() < 24 {
             return Err(ParseDstvError::new("Invalid Header"));
         }
-        let lengths = lines[8].trim().split(',').collect::<Vec<&str>>();
+        let lengths: String = dstv_str(lines.get(8))?;
+        let lengths = lengths.split_once(',');
         // the length and the saw length of the piece are stored on the same line,
         // separated by a comma
-        let (length, saw_length) = if lengths.len() == 2 {
-            (
-                lengths[0].trim().parse::<f64>().unwrap(),
-                Some(lengths[1].trim().parse::<f64>().unwrap()),
-            )
-        } else {
-            (lengths[0].trim().parse::<f64>().unwrap(), None)
+        let (length, saw_length) = match lengths {
+            Some((one, two)) => (dstv_str(Some(one))?, dstv_str(Some(two)).ok()),
+            _ => (dstv_str(lines.get(8))?, None),
         };
+
         Ok(Self {
-            order_identification: lines[0].trim().to_string(),
-            drawing_identification: lines[1].trim().to_string(),
-            phase_identification: lines[2].trim().to_string(),
-            piece_identification: lines[3].trim().to_string(),
-            steel_quality: lines[4].trim().to_string(),
-            quantity_of_pieces: lines[5].trim().parse::<i32>().unwrap(),
-            profile: lines[6].trim().to_string(),
-            code_profile: CodeProfile::from_str(lines[7].trim()),
+            order_identification: dstv_str(lines.get(0))?,
+            drawing_identification: dstv_str(lines.get(1))?,
+            phase_identification: dstv_str(lines.get(2))?,
+            piece_identification: dstv_str(lines.get(3))?,
+            steel_quality: dstv_str(lines.get(4))?,
+            quantity_of_pieces: dstv_str(lines.get(5))?,
+            profile: dstv_str(lines.get(6))?,
+            code_profile: {
+                let s: String = dstv_str(lines.get(7))?;
+                CodeProfile::from_str(&s)?
+            },
             length,
             saw_length,
-            profile_height: lines[9].trim().parse::<f64>().unwrap(),
-            flange_width: lines[10].trim().parse::<f64>().unwrap(),
-            flange_thickness: lines[11].trim().parse::<f64>().unwrap(),
-            web_thickness: lines[12].trim().parse::<f64>().unwrap(),
-            radius: lines[13].trim().parse::<f64>().unwrap(),
-            weight_by_meter: lines[14].trim().parse::<f64>().unwrap(),
-            painting_surface_by_meter: lines[15].trim().parse::<f64>().unwrap(),
-            web_start_cut: lines[16].trim().parse::<f64>().unwrap(),
-            web_end_cut: lines[17].trim().parse::<f64>().unwrap(),
-            flange_start_cut: lines[18].trim().parse::<f64>().unwrap(),
-            flange_end_cut: lines[19].trim().parse::<f64>().unwrap(),
-            text1_info_on_piece: lines[20].trim().to_string(),
-            text2_info_on_piece: lines[21].trim().to_string(),
-            text3_info_on_piece: lines[22].trim().to_string(),
-            text4_info_on_piece: lines[23].trim().to_string(),
+            profile_height: dstv_str(lines.get(9))?,
+            flange_width: dstv_str(lines.get(10))?,
+            flange_thickness: dstv_str(lines.get(11))?,
+            web_thickness: dstv_str(lines.get(12))?,
+            radius: dstv_str(lines.get(13))?,
+            weight_by_meter: dstv_str(lines.get(14))?,
+            painting_surface_by_meter: dstv_str(lines.get(15))?,
+            web_start_cut: dstv_str(lines.get(16))?,
+            web_end_cut: dstv_str(lines.get(17))?,
+            flange_start_cut: dstv_str(lines.get(18))?,
+            flange_end_cut: dstv_str(lines.get(19))?,
+            text1_info_on_piece: dstv_str(lines.get(20))?,
+            text2_info_on_piece: dstv_str(lines.get(21))?,
+            text3_info_on_piece: dstv_str(lines.get(22))?,
+            text4_info_on_piece: dstv_str(lines.get(23))?,
         })
     }
+}
+
+fn dstv_str<S, T>(inp: Option<S>) -> Result<T, ParseDstvError>
+where
+    S: AsRef<str>,
+    T: FromStr,
+    T::Err: Debug,
+{
+    inp.ok_or_else(|| ParseDstvError::new("Invalid Header"))?
+        .as_ref()
+        .trim()
+        .parse()
+        .map_err(|e| ParseDstvError::from_err("Could not parse from DSTV", e))
 }

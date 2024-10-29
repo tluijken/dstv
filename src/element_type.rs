@@ -1,4 +1,6 @@
-use crate::prelude::{Bend, Cut, DstvElement, Hole, InnerBorder, Numeration, OuterBorder, Slot};
+use crate::prelude::{
+    Bend, Cut, DstvElement, Hole, InnerBorder, Numeration, OuterBorder, ParseDstvError, Slot,
+};
 
 /// Enum to represent the different types of elements in a DSTV file
 /// The enum is used to parse the DSTV file into a vector of DSTV elements
@@ -56,10 +58,13 @@ impl ElementType {
     /// * `lines` - A vector of string slices that holds the lines of the DSTV file
     /// # Returns
     /// * A vector of DSTV elements
-    pub fn parse_dstv_element(&self, lines: &Vec<&str>) -> Vec<Box<dyn DstvElement>> {
+    pub fn parse_dstv_element(
+        &self,
+        lines: &[&str],
+    ) -> Result<Vec<Box<dyn DstvElement>>, ParseDstvError> {
         match self {
-            ElementType::OuterBorder => vec![Box::new(OuterBorder::from_lines(lines))],
-            ElementType::InnerBorder => vec![Box::new(InnerBorder::from_lines(lines))],
+            ElementType::OuterBorder => Ok(vec![Box::new(OuterBorder::from_lines(lines)?)]),
+            ElementType::InnerBorder => Ok(vec![Box::new(InnerBorder::from_lines(lines)?)]),
             _ => lines
                 .iter()
                 .filter(|line| !line.is_empty())
@@ -73,18 +78,22 @@ impl ElementType {
     /// * `line` - A string slice that holds the line of the DSTV file
     /// # Returns
     /// * A DSTV element
-    /// # Panics
+    /// # Errors
     /// * If the string slice is not a valid DSTV element
-    fn parse_dstv_element_from_line(&self, line: &str) -> Box<dyn DstvElement> {
-        match self {
-            ElementType::Numeration => Box::new(Numeration::from_str(line).unwrap()),
-            ElementType::Bends => Box::new(Bend::from_str(line).unwrap()),
-            ElementType::Cuts => Box::new(Cut::from_str(line).unwrap()),
-            ElementType::Hole => match &line.split_whitespace().count() > &7 {
-                false => Box::new(Hole::from_str(line).unwrap()),
-                true => Box::new(Slot::from_str(line).unwrap()),
-            },
-            _ => panic!("Invalid Element Type"),
-        }
+    fn parse_dstv_element_from_line(
+        &self,
+        line: &str,
+    ) -> Result<Box<dyn DstvElement>, ParseDstvError> {
+        Ok(match self {
+            ElementType::Numeration => Box::new(Numeration::from_str(line)?),
+            ElementType::Bends => Box::new(Bend::from_str(line)?),
+            ElementType::Cuts => Box::new(Cut::from_str(line)?),
+            ElementType::Hole if line.split_whitespace().count() > 7 => {
+                Box::new(Slot::from_str(line)?)
+            }
+            ElementType::Hole => Box::new(Hole::from_str(line)?),
+
+            _ => return Err(ParseDstvError::new("Invalid Element Type")),
+        })
     }
 }

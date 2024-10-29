@@ -32,14 +32,14 @@ impl DstvElement for Slot {
     /// A `Result` containing either a `Slot` or an error message
     fn from_str(line: &str) -> Result<Self, ParseDstvError> {
         let mut iter = line.split_whitespace();
-        let fl_code = PartFace::from_str(iter.next().unwrap()).expect("Invalid flange code");
-        let x_coord = get_f64_from_str(iter.next(), "x_coord");
-        let y_coord = get_f64_from_str(iter.next(), "y_coord");
-        let diameter = get_f64_from_str(iter.next(), "diameter");
-        let depth = get_f64_from_str(iter.next(), "depth");
-        let slot_length = get_f64_from_str(iter.next(), "slot_length");
-        let slot_width = get_f64_from_str(iter.next(), "slot_width");
-        let angle = get_f64_from_str(iter.next(), "angle");
+        let fl_code = PartFace::from_str(iter.next().ok_or(ParseDstvError::new("No Slot Found"))?)?;
+        let x_coord = get_f64_from_str(iter.next(), "x_coord")?;
+        let y_coord = get_f64_from_str(iter.next(), "y_coord")?;
+        let diameter = get_f64_from_str(iter.next(), "diameter")?;
+        let depth = get_f64_from_str(iter.next(), "depth")?;
+        let slot_length = get_f64_from_str(iter.next(), "slot_length")?;
+        let slot_width = get_f64_from_str(iter.next(), "slot_width")?;
+        let angle = get_f64_from_str(iter.next(), "angle")?;
         Ok(Self {
             angle,
             slot_length,
@@ -72,5 +72,8 @@ impl DstvElement for Slot {
 
     fn get_facing(&self) -> &PartFace {
         &self.fl_code
+    }
+    fn as_any(&self) -> &dyn core::any::Any {
+        self
     }
 }

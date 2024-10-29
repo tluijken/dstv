@@ -27,12 +27,15 @@ impl DstvElement for Numeration {
     /// A `Result` containing either a `Numeration` or an error message
     fn from_str(line: &str) -> Result<Self, ParseDstvError> {
         let mut iter = line.split_whitespace();
-        let fl_code = PartFace::from_str(iter.next().unwrap()).expect("Invalid flange code");
-        let x_coord = get_f64_from_str(iter.next(), "x_coord");
-        let y_coord = get_f64_from_str(iter.next(), "y_coord");
-        let angle = get_f64_from_str(iter.next(), "angle");
-        let letterheight = get_f64_from_str(iter.next(), "letterheight");
-        let text = iter.next().expect("Text element not found").to_string();
+        let fl_code = PartFace::from_str(iter.next().ok_or(ParseDstvError::new("No Hole Found"))?)?;
+        let x_coord = get_f64_from_str(iter.next(), "x_coord")?;
+        let y_coord = get_f64_from_str(iter.next(), "y_coord")?;
+        let angle = get_f64_from_str(iter.next(), "angle")?;
+        let letterheight = get_f64_from_str(iter.next(), "letterheight")?;
+        let text = iter
+            .next()
+            .ok_or(ParseDstvError::new("Text element not found"))?
+            .to_string();
 
         Ok(Self {
             angle,
@@ -56,5 +59,8 @@ impl DstvElement for Numeration {
 
     fn get_facing(&self) -> &PartFace {
         &self.fl_code
+    }
+    fn as_any(&self) -> &dyn core::any::Any {
+        self
     }
 }
