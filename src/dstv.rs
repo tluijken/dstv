@@ -1,6 +1,18 @@
 use crate::{
     dstv_element::ParseDstvError,
-    prelude::{DstvElement, ElementType, Header, PartFace},
+    prelude::{
+        DstvElement, 
+        ElementType,
+        Header,
+        Numeration,
+        PartFace,
+        Slot,
+        Hole,
+        Cut,
+        Bend,
+        InnerBorder,
+        OuterBorder
+    }, 
 };
 
 /// Represents a DSTV file
@@ -10,6 +22,16 @@ pub struct Dstv {
     pub header: Header,
     /// A vector of DSTV elements, e.g. cuts, holes, borders, etc.
     pub elements: Vec<Box<dyn DstvElement>>,
+}
+
+pub enum DstvElementType {
+    OuterBorder(OuterBorder),
+    InnerBorder(InnerBorder),
+    Cut(Cut),
+    Bend(Bend),
+    Slot(Slot),
+    Hole(Hole),
+    Numeration(Numeration),
 }
 
 impl Dstv {
