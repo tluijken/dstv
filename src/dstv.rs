@@ -15,13 +15,24 @@ pub struct Dstv {
 impl Dstv {
     /// Creates a new Dstv struct from a file path
     /// # Arguments
-    /// * `file_path` - A string slice that holds the path to the file
+    /// * `file_path` - A string slice/path that holds the path to the file
     /// # Returns
     /// * A Result containing either a Dstv struct or a &'static str
-    pub fn from_file(file_path: &str) -> Result<Self, ParseDstvError> {
-        let lines = std::fs::read_to_string(file_path).expect("Unable to read file");
-
-        let elements = lines
+    pub fn from_file<P: AsRef<std::path::Path>>(file_path: P) -> Result<Self, ParseDstvError> {
+        let file_path = file_path.as_ref();
+        let file = std::fs::read_to_string(file_path).map_err(|e| {
+            ParseDstvError::new(&format!("Unable to read file: `{file_path:#?}`\t{e}"))
+        })?;
+        Self::from_str(file)
+    }
+    /// Creates a new Dstv struct from an already read file
+    /// # Arguments
+    /// * `file` - The file as read to String
+    /// # Returns
+    /// * A Result containing either a Dstv struct or a &'static str
+    pub fn from_str<S: AsRef<str>>(file: S) -> Result<Self, ParseDstvError> {
+        let elements = file
+            .as_ref()
             .lines()
             .filter(|line| !line.trim().starts_with('*'))
             // create a tuple of (element_type, lines)
