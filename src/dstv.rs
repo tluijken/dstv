@@ -76,14 +76,20 @@ impl DstvElementType {
 
 /// Helper function to parse a line into a specific `DstvElementType` variant
 fn parse_dstv_element(line: &str) -> Result<DstvElementType, ParseDstvError> {
+    println!("Parsing line: {}", line);
     match line.get(0..2) {
-        Some("OB") => OuterBorder::from_str(line).map(DstvElementType::OuterBorder),
-        Some("IB") => InnerBorder::from_str(line).map(DstvElementType::InnerBorder),
-        Some("CU") => Cut::from_str(line).map(DstvElementType::Cut),
-        Some("BE") => Bend::from_str(line).map(DstvElementType::Bend),
-        Some("SL") => Slot::from_str(line).map(DstvElementType::Slot),
-        Some("HO") => Hole::from_str(line).map(DstvElementType::Hole),
-        Some("NU") => Numeration::from_str(line).map(DstvElementType::Numeration),
+        Some("AK") => OuterBorder::from_str(line).map(DstvElementType::OuterBorder),
+        Some("IK") => InnerBorder::from_str(line).map(DstvElementType::InnerBorder),
+        //Some("PU") => PowerPointNotes::from_str(line).map(DstvElementType::PowerPointNotes),
+        Some("SC") => Cut::from_str(line).map(DstvElementType::Cut),
+        Some("KA") => Bend::from_str(line).map(DstvElementType::Bend),
+        Some("SL") => 
+            match line.split_whitespace().count() > 7 {
+                true => Slot::from_str(line).map(DstvElementType::Slot),
+                false => Hole::from_str(line).map(DstvElementType::Hole),
+            },
+        Some("BO") => Hole::from_str(line).map(DstvElementType::Hole),
+        Some("SI") => Numeration::from_str(line).map(DstvElementType::Numeration),
         _ => Err(ParseDstvError::new("Unknown element type")),
     }
 }
@@ -100,19 +106,23 @@ impl Dstv {
         let file_content = file.as_ref();
         let lines = file_content.lines().filter(|line| !line.trim().starts_with('*'));
         
-        // Parse header from the initial lines
-        let header_lines: Vec<_> = lines.clone().take_while(|line| !line.is_empty()).collect();
-        let header = Header::from_lines(header_lines)
+        let mut empty_lines_found = false;
+        let header_lines = lines
+            .clone()
+            .take_while(|line| {
+                if empty_lines_found {
+                    return line.is_empty();
+                }
+                empty_lines_found = line.is_empty();
+                true
+            })
+            .filter(|line| !line.starts_with("ST"))
+            .map(|line| line.trim())
+            .collect::<Vec<_>>();
+
+        let header = Header::from_lines(header_lines.clone())
             .map_err(|e| ParseDstvError::from_err("Invalid Header", e))?;
-
-        // Parse each element line into `DstvElementType` and collect
-        let elements = lines
-            .skip_while(|line| !line.is_empty()) // Skip past the header section
-            .filter(|line| !line.trim().is_empty()) // Ignore empty lines
-            .map(parse_dstv_element)
-            .collect::<Result<Vec<DstvElementType>, ParseDstvError>>()?;
-
-        Ok(Self { header, elements })
+        Ok(Self { header, elements: Vec::new() })
     }
 
     pub fn to_svg(&mut self) -> String {
