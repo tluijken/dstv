@@ -66,7 +66,4 @@ impl DstvElement for Bend {
             self.origin_x, self.origin_y, self.radius, self.radius, self.finish_x, self.finish_y
         )
     }
-    fn as_any(&self) -> &dyn core::any::Any {
-        self
-    }
 }
