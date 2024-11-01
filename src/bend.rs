@@ -8,6 +8,7 @@ use crate::prelude::DstvElement;
 /// The end point is the point where the arc ends.
 /// The arc is drawn counter-clockwise from the origin to the end point.
 /// The arc is drawn clockwise from the end point to the origin.
+#[derive(Debug)]
 pub struct Bend {
     /// The angle of the arc in degrees.
     pub angle: f64,
@@ -64,8 +65,5 @@ impl DstvElement for Bend {
             "<path d=\"M{},{} A{},{},0,0,1,{},{}\" stroke=\"black\" fill=\"none\" />",
             self.origin_x, self.origin_y, self.radius, self.radius, self.finish_x, self.finish_y
         )
-    }
-    fn as_any(&self) -> &dyn core::any::Any {
-        self
     }
 }

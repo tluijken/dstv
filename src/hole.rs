@@ -2,6 +2,7 @@ pub use crate::prelude::DstvElement;
 use crate::{dstv_element::ParseDstvError, get_f64_from_str, prelude::PartFace};
 use std::str::FromStr;
 /// Represents a hole in a plate
+#[derive(Debug)]
 pub struct Hole {
     /// Diameter of the hole
     pub diameter: f64,
@@ -55,8 +56,5 @@ impl DstvElement for Hole {
 
     fn get_facing(&self) -> &PartFace {
         &self.fl_code
-    }
-    fn as_any(&self) -> &dyn core::any::Any {
-        self
     }
 }

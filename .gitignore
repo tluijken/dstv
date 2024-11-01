@@ -14,3 +14,7 @@ Cargo.lock
 *.pdb
 
 **/.idea
+
+# ignore devbox lock file
+devbox.lock
+.devbox

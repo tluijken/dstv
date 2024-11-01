@@ -5,6 +5,7 @@ use std::str::FromStr;
 
 /// Represents a slot element
 /// A slot element is a hole that has been cut out of a plate but is not a circle shaped hole
+#[derive(Debug)]
 pub struct Slot {
     /// Angle of the slot
     pub angle: f64,
@@ -72,8 +73,5 @@ impl DstvElement for Slot {
 
     fn get_facing(&self) -> &PartFace {
         &self.fl_code
-    }
-    fn as_any(&self) -> &dyn core::any::Any {
-        self
     }
 }

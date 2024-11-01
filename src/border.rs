@@ -1,8 +1,13 @@
-use crate::{dstv_element::{DstvElement, ParseDstvError}, get_f64_from_str, prelude::PartFace};
+use crate::{
+    dstv_element::{DstvElement, ParseDstvError},
+    get_f64_from_str,
+    prelude::PartFace,
+};
 use std::str::FromStr;
 
 /// A struct representing the outer border of a DSTV file
 /// A DSTV file can have multiple outer borders
+#[derive(Debug)]
 pub struct OuterBorder {
     /// A vector of border points, representing the contour of the outer border
     pub contour: Vec<BorderPoint>,
@@ -10,6 +15,7 @@ pub struct OuterBorder {
 
 /// A struct representing the inner border of a DSTV file
 /// A DSTV file can have multiple inner borders
+#[derive(Debug)]
 pub struct InnerBorder {
     /// A vector of border points, representing the contour of the inner border
     pub contour: Vec<BorderPoint>,
@@ -43,7 +49,7 @@ pub struct BorderPoint {
 /// * If the x coordinate of a border point is invalid
 /// * If the y coordinate of a border point is invalid
 /// * If the radius of a border point is invalid
-fn read_contour(lines: &[&str]) -> Result<Vec<BorderPoint>,ParseDstvError> {
+fn read_contour(lines: &[&str]) -> Result<Vec<BorderPoint>, ParseDstvError> {
     lines
         .iter()
         .filter(|line| !line.is_empty())
@@ -55,17 +61,15 @@ fn read_contour(lines: &[&str]) -> Result<Vec<BorderPoint>,ParseDstvError> {
                     iter.next(); // iterate to the next split
                     fl_code
                 }
-                Err(_) => {
-                    PartFace::Front
-                }
+                Err(_) => PartFace::Front,
             };
 
             let x_coord = get_f64_from_str(iter.next(), "x_coord")?;
             let y_coord = get_f64_from_str(iter.next(), "y_coord")?;
             let radius = get_f64_from_str(iter.next(), "radius")?;
             let bevel = match iter.next() {
-                Some(val) =>     get_f64_from_str(Some(val), "bevel")?,
-                _ => 0.0
+                Some(val) => get_f64_from_str(Some(val), "bevel")?,
+                _ => 0.0,
             };
             Ok(BorderPoint {
                 fl_code,
@@ -91,7 +95,7 @@ fn contour_to_svg(contour: &[BorderPoint], color: &str, stroke_width: f64) -> St
         |(mut path, prev), (i, point)| {
             let segment = if i == 0 {
                 format!("M {} {}", point.x_coord, point.y_coord)
-            } 
+            }
             else {
                 match prev.radius {
                     r if r > 0.0 && prev.y_coord < point.y_coord && point.x_coord > prev.x_coord => {
@@ -134,7 +138,7 @@ impl OuterBorder {
     /// Creates a new OuterBorder from a vector of BorderPoints
     /// # Arguments
     /// * `lines` - A vector of string slices, representing the contour of the border
-    pub fn from_lines(lines: &[&str]) -> Result<Self,ParseDstvError> {
+    pub fn from_lines(lines: &[&str]) -> Result<Self, ParseDstvError> {
         Ok(Self {
             contour: read_contour(lines)?,
         })
@@ -145,7 +149,7 @@ impl InnerBorder {
     /// Creates a new InnerBorder from a vector of BorderPoints
     /// # Arguments
     /// * `lines` - A vector of string slices, representing the contour of the border
-    pub fn from_lines(lines: &[&str]) -> Result<Self,ParseDstvError> {
+    pub fn from_lines(lines: &[&str]) -> Result<Self, ParseDstvError> {
         Ok(Self {
             contour: read_contour(lines)?,
         })
@@ -170,9 +174,6 @@ impl DstvElement for OuterBorder {
     fn get_facing(&self) -> &PartFace {
         &self.contour[0].fl_code
     }
-    fn as_any(&self) -> &dyn core::any::Any {
-        self
-    }
 }
 
 impl DstvElement for InnerBorder {
@@ -193,8 +194,5 @@ impl DstvElement for InnerBorder {
 
     fn get_facing(&self) -> &PartFace {
         &self.contour[0].fl_code
-    }
-    fn as_any(&self) -> &dyn core::any::Any {
-        self
     }
 }

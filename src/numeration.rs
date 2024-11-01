@@ -4,6 +4,7 @@ use std::str::FromStr;
 
 /// Represents a numeration element
 /// A numeration element is a text element that is used to label a part
+#[derive(Debug)]
 pub struct Numeration {
     /// Angle of the text
     pub angle: f64,
@@ -59,8 +60,5 @@ impl DstvElement for Numeration {
 
     fn get_facing(&self) -> &PartFace {
         &self.fl_code
-    }
-    fn as_any(&self) -> &dyn core::any::Any {
-        self
     }
 }
