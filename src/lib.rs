@@ -3,6 +3,7 @@ mod border;
 mod cut;
 mod dstv;
 mod dstv_element;
+mod dstv_element_type;
 mod header;
 mod hole;
 mod numeration;

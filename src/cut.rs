@@ -3,6 +3,7 @@ use crate::get_f64_from_str;
 use crate::prelude::DstvElement;
 
 /// Represents a cut in the DSTV file
+#[derive(Debug)]
 pub struct Cut {
     /// Normal vector x component
     pub nor_vec_x: f64,

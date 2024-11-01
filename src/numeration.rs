@@ -4,6 +4,7 @@ use std::str::FromStr;
 
 /// Represents a numeration element
 /// A numeration element is a text element that is used to label a part
+#[derive(Debug)]
 pub struct Numeration {
     /// Angle of the text
     pub angle: f64,
