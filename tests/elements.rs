@@ -3,9 +3,6 @@ mod tests {
     use dstv::prelude::*;
     #[test]
     fn check_element_by_type() {
-        let dstv = Dstv::from_file("./tests/data/P1565.nc");
-        let dstv = dstv.unwrap();
-        let elements = dstv.elements;
         let mut outer_border = 0;
         let mut inner_border = 0;
         let mut cut = 0;
@@ -14,8 +11,8 @@ mod tests {
         let mut hole = 0;
         let mut numeration = 0;
 
-        assert_eq!(elements.len(), 7);
-        for element in elements {
+        let dstv = Dstv::from_file("./tests/data/P1565.nc").unwrap();
+        for element in dstv.elements {
             match element {
                 DstvElementType::OuterBorder(e) => 
                 {

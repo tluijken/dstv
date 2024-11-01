@@ -36,6 +36,49 @@ assert_eq!(dstv.header.order_identification, "PROJECT-1");
 let svg = dstv.to_svg();
 ```
 
+To work with specific element types in a DSTV file, use the DstvElementType enum
+to match each element and perform type-specific actions. Once you load the DSTV
+file with Dstv::from_file, iterate over dstv.elements and use a match expression
+to handle each variant, like OuterBorder, InnerBorder, or Hole, accessing their
+unique fields and properties.
+
+Here’s an example:
+```rust
+let dstv = Dstv::from_file("./tests/data/P1565.nc").unwrap();
+for element in dstv.elements {
+    match element {
+        DstvElementType::OuterBorder(e) => 
+        {
+            assert!(e.contour.len() > 0);
+        },
+            DstvElementType::InnerBorder(e) => 
+            {
+                assert!(e.contour.len() > 0);
+            },
+            DstvElementType::Cut(e) => 
+            {
+                assert!(e.nor_vec_x > 0.0);
+            },
+            DstvElementType::Bend(e) => 
+            {
+                assert!(e.angle > 0.0);
+            },
+            DstvElementType::Slot(e) => 
+            {
+                assert!(e.angle > 0.0);
+            },
+            DstvElementType::Hole(e) => 
+            {
+                assert!(e.diameter > 0.0);
+            },
+            DstvElementType::Numeration(e) => 
+            {
+                assert_ne!(e.text, "");
+            },
+    }
+}
+```
+
 ### Examples
 
 #### Single faced plates:
