@@ -1,5 +1,5 @@
 use crate::prelude::{
-        Bend, Cut, DstvElement, Hole, InnerBorder, Numeration, OuterBorder, PartFace, Slot
+    Bend, Cut, DstvElement, Hole, InnerBorder, Numeration, OuterBorder, PartFace, Slot,
 };
 
 #[derive(Debug)]

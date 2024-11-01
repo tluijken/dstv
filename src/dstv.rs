@@ -32,23 +32,19 @@ fn parse_dstv_element(
     match element_type {
         OUTER_BORDER_TYPE => OuterBorder::from_lines(lines).map(DstvElementType::OuterBorder),
         INNER_BORDER_TYPE => InnerBorder::from_lines(lines).map(DstvElementType::InnerBorder),
-        _ => {
-            match element_type {
-                CUT_TYPE => Cut::from_str(lines[0]).map(DstvElementType::Cut),
-                BEND_TYPE => Bend::from_str(lines[0]).map(DstvElementType::Bend),
-                HOLE_TYPE => match lines[0].split_whitespace().count() > 7 {
-                    true => Slot::from_str(lines[0]).map(DstvElementType::Slot),
-                    false => Hole::from_str(lines[0]).map(DstvElementType::Hole),
-                },
-                NUMERATION_TYPE => Numeration::from_str(lines[0]).map(DstvElementType::Numeration),
-                _ => {
-                    Err(ParseDstvError::new(&format!(
-                        "Unknown element type: `{}`",
-                        element_type
-                    )))
-                }
-            }
-        }
+        _ => match element_type {
+            CUT_TYPE => Cut::from_str(lines[0]).map(DstvElementType::Cut),
+            BEND_TYPE => Bend::from_str(lines[0]).map(DstvElementType::Bend),
+            HOLE_TYPE => match lines[0].split_whitespace().count() > 7 {
+                true => Slot::from_str(lines[0]).map(DstvElementType::Slot),
+                false => Hole::from_str(lines[0]).map(DstvElementType::Hole),
+            },
+            NUMERATION_TYPE => Numeration::from_str(lines[0]).map(DstvElementType::Numeration),
+            _ => Err(ParseDstvError::new(&format!(
+                "Unknown element type: `{}`",
+                element_type
+            ))),
+        },
     }
 }
 
@@ -67,63 +63,14 @@ impl Dstv {
             .lines()
             .filter(|line| !line.trim().starts_with('*'));
 
-        let mut empty_lines_found = false;
-        let header_lines = lines
-            .clone()
-            .take_while(|line| {
-                if empty_lines_found {
-                    return line.trim().is_empty();
-                }
-                empty_lines_found = line.trim().is_empty();
-                true
-            })
-            .filter(|line| !line.starts_with(START))
-            .map(|line| line.trim())
-            .collect::<Vec<_>>();
-
+        let header_lines = extract_header_lines(&mut lines.clone());
         let header = Header::from_lines(header_lines.clone())
             .map_err(|e| ParseDstvError::from_err("Invalid Header", e))?;
 
-        // Parse the rest of the lines into DSTV elements
-        // Keep a key-value pair of types and the lines found untill the next type is found
-        let element_lines = lines
-            .skip(header_lines.len() + 1)
-            .filter(|line| !line.eq(&END))
-            .filter(|line| !line.is_empty())
-            .collect::<Vec<_>>();
-        let element_groups = element_lines
-            .into_iter()
-            .fold(Vec::<(&str, Vec<&str>)>::new(), |mut elements, line| {
-                // check if the first two characters of the line are empty
-                let current_element = elements.last();
-                match line[..2].trim().is_empty() {
-                    true => {
-                        if current_element.is_some() && 
-                           current_element.unwrap().0.eq(HOLE_TYPE) && 
-                            current_element.unwrap().1.len() == 1 {
-                            elements.push((HOLE_TYPE, vec![line]));
-                        } else {
-                            elements.last_mut().unwrap().1.push(line);
-                        }
-                    }
-                    false => {
-                        elements.push((line, Vec::new()));
-                    }
-                }
-                elements
-            })
-            .into_iter()
-            .collect::<Vec<_>>();
+        let element_groups = group_elements_by_type(lines.skip(header_lines.len()).into_iter());
 
-        let elements = element_groups
-            .into_iter()
-            .map(|(element_type, lines)| parse_dstv_element(element_type, &lines))
-            .filter(|element| element.is_ok())
-            .collect::<Result<Vec<_>, _>>();
-        Ok(Self {
-            header,
-            elements: elements?,
-        })
+        let elements = parse_elements(element_groups)?;
+        Ok(Self { header, elements })
     }
 
     pub fn to_svg(&mut self) -> String {
@@ -175,6 +122,70 @@ impl Dstv {
     }
 }
 
-fn parse_header(lines: Vec<&str>) -> Result<Header, ParseDstvError> {
-    Header::from_lines(lines)
+/// Extracts header lines from the beginning of the file iterator `lines`.
+/// Stops when it encounters the first empty line following non-empty lines.
+fn extract_header_lines<'a, I>(lines: &mut I) -> Vec<&'a str>
+where
+    I: Iterator<Item = &'a str> + Clone,
+{
+    let mut empty_lines_found = false;
+    lines
+        .clone()
+        .take_while(|line| {
+            if empty_lines_found {
+                return line.trim().is_empty();
+            }
+            empty_lines_found = line.trim().is_empty();
+            true
+        })
+        .filter(|line| !line.starts_with(START))
+        .map(|line| line.trim())
+        .collect()
+}
+
+/// Groups lines into (element type, lines) pairs based on the first two characters.
+/// Stops processing when it encounters the `END` line.
+fn group_elements_by_type<'a, I>(lines: I) -> Vec<(&'a str, Vec<&'a str>)>
+where
+    I: Iterator<Item = &'a str>,
+{
+    lines
+        .into_iter()
+        .filter(|line| !line.eq(&END))
+        .filter(|line| !line.trim().is_empty())
+        .fold(Vec::<(&str, Vec<&str>)>::new(), |mut elements, line| {
+            // check if the first two characters of the line are empty
+            let current_element = elements.last();
+            match line[..2].trim().is_empty() {
+                true => {
+                    if current_element.is_some()
+                        // chef special for holes, which have a single element indicating the hole type
+                        // followed by multiple hole lines
+                        && current_element.unwrap().0.eq(HOLE_TYPE)
+                        && current_element.unwrap().1.len() == 1
+                    {
+                        elements.push((HOLE_TYPE, vec![line]));
+                    } else {
+                        elements.last_mut().unwrap().1.push(line);
+                    }
+                }
+                false => {
+                    elements.push((line, Vec::new()));
+                }
+            }
+            elements
+        })
+        .into_iter()
+        .collect::<Vec<_>>()
+}
+
+/// Parses each element group into `DstvElementType`.
+fn parse_elements(
+    element_groups: Vec<(&str, Vec<&str>)>,
+) -> Result<Vec<DstvElementType>, ParseDstvError> {
+    element_groups
+        .into_iter()
+        .map(|(element_type, lines)| parse_dstv_element(element_type, &lines))
+        .filter(|element| element.is_ok())
+        .collect::<Result<Vec<_>, _>>()
 }

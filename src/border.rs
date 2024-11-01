@@ -95,7 +95,7 @@ fn contour_to_svg(contour: &[BorderPoint], color: &str, stroke_width: f64) -> St
         |(mut path, prev), (i, point)| {
             let segment = if i == 0 {
                 format!("M {} {}", point.x_coord, point.y_coord)
-            } 
+            }
             else {
                 match prev.radius {
                     r if r > 0.0 && prev.y_coord < point.y_coord && point.x_coord > prev.x_coord => {
