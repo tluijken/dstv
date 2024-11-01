@@ -21,6 +21,7 @@ pub mod prelude {
     pub use crate::cut::*;
     pub use crate::dstv::*;
     pub use crate::dstv_element::*;
+    pub use crate::dstv_element_type::*;
     pub use crate::header::*;
     pub use crate::hole::*;
     pub use crate::numeration::*;
