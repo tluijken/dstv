@@ -2,6 +2,12 @@
 
 ## Overview
 
+[![Crates.io](https://img.shields.io/crates/v/dstv.svg)](https://crates.io/crates/dstv)
+[![Documentation](https://img.shields.io/badge/documentation-1)](https://docs.rs/dstv/latest/dstv/index.html)
+[![GitHub Issues](https://img.shields.io/github/issues/tluijken/dstv)]()
+[![GitHub Stars](https://img.shields.io/github/stars/tluijken/dstv)]()
+[![GitHub License](https://img.shields.io/github/license/tluijken/dstv)]()
+
 Welcome to the DSTV crate repository! This Rust crate is designed to parse DSTV (NC/NC1) files and visualize them as SVG (Scalable Vector Graphics). DSTV is a format extensively used in the steel industry for exchanging data about steel parts. 
 
 ## Features
@@ -51,30 +57,30 @@ for element in dstv.elements {
         {
             assert!(e.contour.len() > 0);
         },
-            DstvElementType::InnerBorder(e) => 
-            {
-                assert!(e.contour.len() > 0);
-            },
-            DstvElementType::Cut(e) => 
-            {
-                assert!(e.nor_vec_x > 0.0);
-            },
-            DstvElementType::Bend(e) => 
-            {
-                assert!(e.angle > 0.0);
-            },
-            DstvElementType::Slot(e) => 
-            {
-                assert!(e.angle > 0.0);
-            },
-            DstvElementType::Hole(e) => 
-            {
-                assert!(e.diameter > 0.0);
-            },
-            DstvElementType::Numeration(e) => 
-            {
-                assert_ne!(e.text, "");
-            },
+        DstvElementType::InnerBorder(e) => 
+        {
+            assert!(e.contour.len() > 0);
+        },
+        DstvElementType::Cut(e) => 
+        {
+            assert!(e.nor_vec_x > 0.0);
+        },
+        DstvElementType::Bend(e) => 
+        {
+            assert!(e.angle > 0.0);
+        },
+        DstvElementType::Slot(e) => 
+        {
+            assert!(e.angle > 0.0);
+        },
+        DstvElementType::Hole(e) => 
+        {
+            assert!(e.diameter > 0.0);
+        },
+        DstvElementType::Numeration(e) => 
+        {
+            assert_ne!(e.text, "");
+        },
     }
 }
 ```
