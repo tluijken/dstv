@@ -1,0 +1,34 @@
+name: Cargo build and test
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish_to_crates_io:
+    name: "Publish to crates.io"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v0.9.7
+      with:
+        versionSpec: '5.x'
+    - name: Determine Version
+      uses: gittools/actions/gitversion/execute@v0.9.7
+      with:
+        useConfigFile: true
+    - name: "Overwrite version numbers"
+      run: |
+        awk '{gsub(/version = "0.1.0"/, "version = \"'$GitVersion_SemVer'\"")}1' Cargo.toml > Cargo.tmp && mv Cargo.tmp Cargo.toml
+    - uses: actions-rs/toolchain@v1
+      with:
+          toolchain: stable
+          override: true
+    - name: Publish to crates.io
+      run: |
+        cargo publish --token ${CRATES_TOKEN} --allow-dirty 
+      env:
+          CRATES_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN  }}

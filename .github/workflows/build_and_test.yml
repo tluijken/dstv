@@ -1,0 +1,35 @@
+name: Cargo build and test
+
+on:
+  push:
+    branches: [ develop, main, release/**, hotfix/** ]
+  pull_request:
+    branches: [ develop, main, release/**, hotfix/** ]
+
+jobs:
+  build_and_test:
+    name: Build and test dstv
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crusty-pie/toolchain@v1
+        with:
+          toolchain: stable
+          targets: x86_64-unknown-linux-musl
+          override: true
+          components: llvm-tools-preview
+      - name: Download grcov
+        run: |
+          mkdir -p "${HOME}/.local/bin"
+          curl -sL https://github.com/mozilla/grcov/releases/download/v0.8.10/grcov-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C "${HOME}/.local/bin"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: cargo test
+        run: |
+          mkdir -p ./coverage
+          CARGO_INCREMENTAL=0 RUSTFLAGS='-Cinstrument-coverage' LLVM_PROFILE_FILE='cargo-test-%p-%m.profraw' cargo test 
+          grcov . --binary-path ./target/debug/deps/ -s . -t lcov --branch --ignore-not-existing --ignore '../*' --ignore "/*" -o ./coverage/tests.lcov
+      - name: Check test coverage
+        uses: tluijken/code-coverage-threshold@v1
+        with:
+          coverage-file: ./coverage/tests.lcov
+          minimum-coverage: 90
