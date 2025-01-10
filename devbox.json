@@ -7,6 +7,8 @@
     "gcc",
     "pkg-config",
     "cmake",
+    "grcov@latest",
+    "xdg-utils@latest",
   ],
   "shell": {
     "init_hook": [

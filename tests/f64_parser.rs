@@ -9,5 +9,6 @@ mod tests {
         assert_eq!(get_f64_from_str(Some("1.0o"), "test"), Ok(1.0));
         assert_eq!(get_f64_from_str(Some("1.0"), "test"), Ok(1.0));
         assert_eq!(get_f64_from_str(None, "test"), Ok(0.0));
+        assert_eq!(get_f64_from_str(Some("klj"), "test").is_err(), true);
     }
 }

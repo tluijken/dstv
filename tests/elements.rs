@@ -17,36 +17,43 @@ mod tests {
                 DstvElementType::OuterBorder(e) => 
                 {
                     assert!(e.contour.len() > 0);
+                    assert_eq!(e.get_index(), 0);
                     outer_border += 1;
                 },
                 DstvElementType::InnerBorder(e) => 
                 {
                     assert!(e.contour.len() > 0);
+                    assert_eq!(e.get_index(), 0);
                     inner_border += 1;
                 },
                 DstvElementType::Cut(e) => 
                 {
                     assert!(e.nor_vec_x > 0.0);
+                    assert_eq!(e.get_index(), 0);
                     cut += 1;
                 },
                 DstvElementType::Bend(e) => 
                 {
                     assert!(e.angle > 0.0);
+                    assert_eq!(e.get_index(), 0);
                     bend += 1;
                 },
                 DstvElementType::Slot(e) => 
                 {
                     assert!(e.angle > 0.0);
+                    assert_eq!(e.get_index(), 0);
                     slot += 1;
                 },
                 DstvElementType::Hole(e) => 
                 {
                     assert!(e.diameter > 0.0);
+                    assert_eq!(e.get_index(), 2);
                     hole += 1;
                 },
                 DstvElementType::Numeration(e) => 
                 {
                     assert_ne!(e.text, "");
+                    assert_eq!(e.get_index(), 2);
                     numeration += 1;
                 },
             }
