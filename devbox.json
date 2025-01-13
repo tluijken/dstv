@@ -9,6 +9,7 @@
     "cmake",
     "grcov@latest",
     "xdg-utils@latest",
+    "gitflow@latest",
   ],
   "shell": {
     "init_hook": [
