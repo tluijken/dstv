@@ -5,6 +5,7 @@ use crate::{
         Bend, Cut, DstvElement, Header, Hole, InnerBorder, Numeration, OuterBorder, PartFace, Slot,
     },
 };
+use std::iter::Peekable;
 
 /// Represents a DSTV file
 /// Includes a header and a vector of DSTV elements
@@ -59,15 +60,16 @@ impl Dstv {
 
     pub fn from_str<S: AsRef<str>>(file: S) -> Result<Self, ParseDstvError> {
         let file_content = file.as_ref();
-        let lines = file_content
+        let mut lines = file_content
             .lines()
-            .filter(|line| !line.trim().starts_with('*'));
+            .filter(|line| !line.trim().starts_with('*'))
+            .peekable();
 
-        let header_lines = extract_header_lines(&mut lines.clone());
-        let header = Header::from_lines(header_lines.clone())
+        let header_lines = extract_header_lines(&mut lines);
+        let header = Header::from_lines(header_lines)
             .map_err(|e| ParseDstvError::from_err("Invalid Header", e))?;
 
-        let element_groups = group_elements_by_type(lines.skip(header_lines.len()).into_iter());
+        let element_groups = group_elements_by_type(lines);
 
         let elements = parse_elements(element_groups)?;
         Ok(Self { header, elements })
@@ -124,23 +126,25 @@ impl Dstv {
 
 /// Extracts header lines from the beginning of the file iterator `lines`.
 /// Stops when it encounters the first empty line following non-empty lines.
-fn extract_header_lines<'a, I>(lines: &mut I) -> Vec<&'a str>
+fn extract_header_lines<'a, I>(lines: &mut Peekable<I>) -> Vec<&'a str>
 where
     I: Iterator<Item = &'a str> + Clone,
 {
-    let mut empty_lines_found = false;
-    lines
-        .clone()
-        .take_while(|line| {
-            if empty_lines_found {
-                return line.trim().is_empty();
-            }
-            empty_lines_found = line.trim().is_empty();
-            true
-        })
-        .filter(|line| !line.starts_with(START))
-        .map(|line| line.trim())
-        .collect()
+    let mut out = Vec::new();
+    while let Some(line) = lines.peek() {
+        let line = line.trim();
+        if out.len() > 23 {
+            // 24 Lines is the correct length for Header.
+            // We leave this item unskipped, as it will likely be an "AK" block
+            break;
+        } else if !((line.is_empty() && out.len() < 20) || line == START) {
+            // If we have an empty line BEFORE notes, ignore
+            out.push(line);
+        }
+        // With the line consumed, jump to next
+        lines.next();
+    }
+    out
 }
 
 /// Groups lines into (element type, lines) pairs based on the first two characters.

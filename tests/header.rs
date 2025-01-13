@@ -178,7 +178,8 @@ mod tests {
         assert_eq!(dstv.header.flange_start_cut, 0.0);
         assert_eq!(dstv.header.flange_end_cut, 0.0);
         assert_eq!(dstv.header.text1_info_on_piece, "");
-        assert_eq!(dstv.header.text2_info_on_piece, "");
+        assert_eq!(dstv.header.text2_info_on_piece, "NoteOnLine2");
         assert_eq!(dstv.header.text3_info_on_piece, "");
+        assert_eq!(dstv.header.text4_info_on_piece, "NoteOnLine4");
     }
 }
