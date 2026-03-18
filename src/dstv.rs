@@ -76,6 +76,43 @@ impl Dstv {
         Ok(Self { header, elements })
     }
 
+    /// Converts the parsed DSTV part into an SVG string.
+    ///
+    /// # Coordinate system
+    ///
+    /// SVG user units map 1:1 to millimetres — no scaling is applied.
+    ///
+    /// The SVG canvas is laid out as an **unfolded view** of the part's faces,
+    /// stacked top-to-bottom in the following order (faces with no elements are
+    /// omitted and do not advance the vertical offset):
+    ///
+    /// ```text
+    /// Y=0 ┌─────────────────────────────────────┐
+    ///     │  Bottom (u)   height = flange_width  │
+    ///     ├─────────────────────────────────────┤
+    ///     │  Front  (v)   height = profile_height│
+    ///     ├─────────────────────────────────────┤
+    ///     │  Top    (o)   height = flange_width  │
+    ///     ├─────────────────────────────────────┤
+    ///     │  Behind (h)   height = profile_height│
+    ///     └─────────────────────────────────────┘
+    ///                       X = header.length
+    /// ```
+    ///
+    /// Within each face, element coordinates use the DSTV convention:
+    /// - **X**: position along the part's length, increasing left-to-right,
+    ///   in the range `[0, header.length]`.
+    /// - **Y**: position across the face, increasing away from the reference
+    ///   edge (Y=0), in the range `[0, face_width]`.
+    ///
+    /// # Top face Y-axis flip
+    ///
+    /// The Top face group carries `transform="translate(0, offset+flange_width) scale(1,-1)"`.
+    /// In DSTV, the Top face's Y=0 is its **inner** edge — the edge adjacent to
+    /// the Front face. Stacking faces top-to-bottom would render it mirrored, so
+    /// `scale(1,-1)` flips the Y-axis and the translation brings the group back
+    /// into the correct vertical band. After the transform, a DSTV coordinate
+    /// `(x, y)` on the Top face maps to SVG position `(x, offset + flange_width - y)`.
     pub fn to_svg(&mut self) -> String {
         self.elements.sort_by_key(|element| element.get_index());
         let mut svg = String::new();
