@@ -5,6 +5,7 @@ use crate::{
         Bend, Cut, DstvElement, Header, Hole, InnerBorder, Numeration, OuterBorder, PartFace, Slot,
     },
 };
+use std::fmt::Write;
 use std::iter::Peekable;
 
 /// Represents a DSTV file
@@ -90,24 +91,24 @@ impl Dstv {
                 .elements
                 .iter()
                 .filter(|element| element.get_facing() == face)
-                .map(|element| element.to_svg())
-                .collect::<Vec<_>>()
-                .join("");
+                .fold(String::new(), |mut s, element| {
+                    s.push_str(&element.to_svg());
+                    s
+                });
 
             if !elements_svg.is_empty() {
-                let transform = if *face == PartFace::Top {
-                    format!(
-                        "translate(0,{}) scale(1, -1)",
-                        offset + self.header.flange_width
-                    )
+                if *face == PartFace::Top {
+                    let _ = write!(
+                        svg,
+                        "<g transform=\"translate(0,{}) scale(1, -1)\" id=\"{}\">",
+                        offset + self.header.flange_width,
+                        id
+                    );
                 } else {
-                    format!("translate(0,{})", offset)
-                };
-
-                svg.push_str(&format!(
-                    "<g transform=\"{}\" id=\"{}\">{}</g>",
-                    transform, id, elements_svg
-                ));
+                    let _ = write!(svg, "<g transform=\"translate(0,{})\" id=\"{}\">", offset, id);
+                }
+                svg.push_str(&elements_svg);
+                svg.push_str("</g>");
 
                 offset += if *face == PartFace::Front || *face == PartFace::Behind {
                     self.header.profile_height
@@ -117,10 +118,13 @@ impl Dstv {
             }
         }
 
-        format!(
+        let mut result = String::with_capacity(svg.len() + 128);
+        let _ = write!(
+            result,
             "<svg viewbox=\"0 0 {} {}\" width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">{}</svg>",
             self.header.length, offset, self.header.length, offset, svg
-        )
+        );
+        result
     }
 }
 

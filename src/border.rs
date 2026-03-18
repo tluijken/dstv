@@ -3,6 +3,7 @@ use crate::{
     get_f64_from_str,
     prelude::PartFace,
 };
+use std::fmt::Write;
 use std::str::FromStr;
 
 /// A struct representing the outer border of a DSTV file
@@ -89,49 +90,52 @@ fn read_contour(lines: &[&str]) -> Result<Vec<BorderPoint>, ParseDstvError> {
 /// # Returns
 /// A string representing the SVG path of the border
 fn contour_to_svg(contour: &[BorderPoint], color: &str, stroke_width: f64) -> String {
-    let mut bevel_lines = Vec::new();
-    let (path_str, _) = contour.iter().enumerate().fold(
-        (String::new(), BorderPoint::default()),
-        |(mut path, prev), (i, point)| {
-            let segment = if i == 0 {
-                format!("M {} {}", point.x_coord, point.y_coord)
+    // ~20 chars per path segment, ~110 chars per bevel line
+    let mut path = String::with_capacity(contour.len() * 20);
+    let mut bevel_lines = String::new();
+    let mut prev = BorderPoint::default();
+
+    for (i, point) in contour.iter().enumerate() {
+        if i == 0 {
+            let _ = write!(path, "M {} {}", point.x_coord, point.y_coord);
+        } else {
+            match prev.radius {
+                r if r > 0.0 && prev.y_coord < point.y_coord && point.x_coord > prev.x_coord => {
+                    let _ = write!(path, " Q {} {} {} {}", point.x_coord, prev.y_coord, point.x_coord, point.y_coord);
+                }
+                r if r > 0.0 && prev.y_coord < point.y_coord && point.x_coord < prev.x_coord => {
+                    let _ = write!(path, " Q {} {} {} {}", prev.x_coord, point.y_coord, point.x_coord, point.y_coord);
+                }
+                r if r > 0.0 && prev.y_coord > point.y_coord && point.x_coord < prev.x_coord => {
+                    let _ = write!(path, " Q {} {} {} {}", point.x_coord, prev.y_coord, point.x_coord, point.y_coord);
+                }
+                r if r > 0.0 || r < 0.0 => {
+                    let _ = write!(path, " A {} {} 0 0 0 {} {}", -prev.radius, -prev.radius, point.x_coord, point.y_coord);
+                }
+                _ => {
+                    let _ = write!(path, " L {} {}", point.x_coord, point.y_coord);
+                }
             }
-            else {
-                match prev.radius {
-                    r if r > 0.0 && prev.y_coord < point.y_coord && point.x_coord > prev.x_coord => {
-                        format!(" Q {} {} {} {}", point.x_coord, prev.y_coord, point.x_coord, point.y_coord)
-                    },
-                    r if r > 0.0 && prev.y_coord < point.y_coord && point.x_coord < prev.x_coord => {
-                        format!(" Q {} {} {} {}", prev.x_coord, point.y_coord, point.x_coord, point.y_coord)
-                    },
-                    r if r > 0.0 && prev.y_coord > point.y_coord && point.x_coord < prev.x_coord => {
-                        format!(" Q {} {} {} {}", point.x_coord, prev.y_coord, point.x_coord, point.y_coord)
-                    },
-                    r if r > 0.0 || r < 0.0 => {
-                        format!(" A {} {} 0 0 0 {} {}", -prev.radius, -prev.radius, point.x_coord, point.y_coord)
-                    },
-                    _ => {
-                    format!(" L {} {}", point.x_coord, point.y_coord)                   }
-                }};
+
             if prev.bevel > 0.0 {
-                let bevel_line = format!(
+                let _ = write!(
+                    bevel_lines,
                     "<line x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"red\" stroke-width=\"4\" />",
                     prev.x_coord, prev.y_coord, point.x_coord, point.y_coord
                 );
-                bevel_lines.push(bevel_line);
             }
-            path.push_str(&segment);
-            (path, point.clone())
-        },
-    );
+        }
+        prev = point.clone();
+    }
 
-    format!(
+    let path_trimmed = path.trim();
+    let mut result = String::with_capacity(60 + path_trimmed.len() + bevel_lines.len());
+    let _ = write!(
+        result,
         "<path d=\"{}\" fill=\"{}\" stroke=\"black\" stroke-width=\"{}\" />{}",
-        path_str.trim(),
-        color,
-        stroke_width,
-        bevel_lines.join("")
-    )
+        path_trimmed, color, stroke_width, bevel_lines
+    );
+    result
 }
 
 impl OuterBorder {
